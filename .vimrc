@@ -1,7 +1,6 @@
 source ~/.vim/simple.vim
-set nocompatible
-set spell
-set spelllang=en_us
+"set spell
+"set spelllang=en_us
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 set runtimepath+=~/.vim/bundle/YouCompleteMe
@@ -17,13 +16,13 @@ let g:ycm_complete_in_strings = 1
 let g:ycm_collect_identifiers_from_comments_and_strings = 1
 let g:ycm_global_ycm_extra_conf='~/.vim/bundle/YouCompleteMe/third_party/ycmd/cpp/ycm/.ycm_extra_conf.py'
 let g:ycm_show_diagnostics_ui = 0                         
-inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"   
+"inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"   
 nnoremap <c-j> :YcmCompleter GoToDefinitionElseDeclaration<CR> 
 let g:ycm_min_num_of_chars_for_completion=2                
-Plugin 'VundleVim/Vundle.vim'
-Plugin 'vim-airline/vim-airline'
-Plugin 'jalvesaq/Nvim-R'
-Plugin 'honza/vim-snippets'
+"Plugin 'VundleVim/Vundle.vim'
+"Plugin 'vim-airline/vim-airline'
+"Plugin 'jalvesaq/Nvim-R'
+"Plugin 'honza/vim-snippets'
 let g:deoplete#enable_at_startup = 1
 set t_Co=256
 set laststatus=2
@@ -35,8 +34,8 @@ let g:airline#extensions#tabline#buffer_nr_show = 1
 Plugin 'The-NERD-tree'
 map <F2> :NERDTreeToggle<CR>
 let NERDTreeWinSize=25 
-Plugin 'indentLine.vim'
-Plugin 'delimitMate.vim'
+"Plugin 'indentLine.vim'
+"Plugin 'delimitMate.vim'
 call vundle#end()
 autocmd BufNewFile *.cpp,*.[ch],*.sh,*.java,*.m,*.tex,*.txt,*.py,*.jl,*.nb,*.cc,*.uml,*.R,*.dta,*.wls  exec ":call SetTitle()" 
 func SetTitle() 
@@ -94,11 +93,11 @@ set nocompatible
 set syntax=on
 set noeb
 set confirm
-set autoindent
-set cindent
-set tabstop=4
-set softtabstop=4
-set shiftwidth=4
+"set autoindent
+"set cindent
+"set tabstop=4
+"set softtabstop=4
+"set shiftwidth=4
 set noexpandtab
 set smarttab
 set number
@@ -114,24 +113,16 @@ set fencs=utf-8,ucs-bom,shift-jis,gb18030,gbk,gb2312,cp936
 set langmenu=zh_CN.UTF-8
 set helplang=cn
 set statusline=%F%m%r%h%w\ [FORMAT=%{&ff}]\ [TYPE=%Y]\ [POS=%l,%v][%p%%]\ %{strftime(\"%d/%m/%y\ -\ %H:%M\")}
-set statusline=[%F]%y%r%m%*%=[Line:%l/%L,Column:%c][%p%%]
+"set statusline=[%F]%y%r%m%*%=[Line:%l/%L,Column:%c][%p%%]
 set laststatus=2
 set cmdheight=2
 filetype on
-filetype plugin on
-filetype indent on
 set viminfo+=!
 set linespace=0
 set wildmenu
-set backspace=2
+"set backspace=2
 set whichwrap+=<,>,h,l
  au BufRead,BufNewFile *  setfiletype txt
-:inoremap ( ()<ESC>i
-:inoremap ) <c-r>=ClosePair(')')<CR>
-:inoremap [ []<ESC>i
-:inoremap ] <c-r>=ClosePair(']')<CR>
-:inoremap " ""<ESC>i
-:inoremap ' ''<ESC>i
 function! ClosePair(char)
 	if getline('.')[col('.') - 1] == a:char
 		return "\<Right>"
@@ -142,3 +133,4 @@ endfunction
 filetype plugin indent on 
 set completeopt=longest,menu
 set wildmenu
+set showcmd
