@@ -134,3 +134,4 @@ filetype plugin indent on
 set completeopt=longest,menu
 set wildmenu
 set showcmd
+imap jj <Esc>
