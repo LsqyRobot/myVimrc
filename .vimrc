@@ -1,51 +1,24 @@
 source ~/.vim/simple.vim
 set dictionary=~/.vim/myKeyWords.vim
-autocmd BufNewFile *.cpp,*.[ch],*.sh,*.java,*.m,*.tex,*.txt,*.py,*.jl,*.nb,*.cc,*.uml,*.R,*.dta,*.wls  exec ":call SetTitle()" 
-func SetTitle() 
-	if &filetype == 'sh' 
-		call setline(1, "##########################################################################") 
-		call append(line("."), "# File Name: ".expand("%")) 
-		call append(line(".")+1, "# Author: lsqyRobot") 
-		call append(line(".")+2, "# mail: lsqyRobot@gmail.com") 
-		call append(line(".")+3, "# Created Time: ".strftime("%c")) 
-		call append(line(".")+4, "#########################################################################") 
-		call append(line(".")+5, "#!/bin/zsh")
-		call append(line(".")+6, "PATH=/home/lsqyrobot/")
-		call append(line(".")+7, "export PATH")
-		call append(line(".")+8, "")
-	else 
-		call setline(1, "/*************************************************************************") 
-		call append(line("."), "	> File Name: ".expand("%")) 
-		call append(line(".")+1, "	> Author: lsqyRobot") 
-		call append(line(".")+2, "	> Mail: lsqyRobot@gmail.com") 
-		call append(line(".")+3, "	> Created Time: ".strftime("%c")) 
-		call append(line(".")+4, " ************************************************************************/") 
-		call append(line(".")+5, "")
-	endif
-	if &filetype == 'cpp'
-		call append(line(".")+6, "#include<iostream>")
-    	call append(line(".")+7, "using namespace std;")
-		call append(line(".")+8, "")
-	endif
-	if &filetype == 'c'
-		call append(line(".")+6, "#include<stdio.h>")
-		call append(line(".")+7, "")
-	endif
-	if &filetype == 'wls' 
-		call append(line(".")+6, "#!/usr/bin/env wolframscript")
-		call append(line(".")+7, "")
-	endif	
-	"	if &filetype == 'java'
-	"		call append(line(".")+6,"public class ".expand("%"))
-	"		call append(line(".")+7,"")
-	"	endif
-	autocmd BufNewFile * normal G
-endfunc 
- 
-set autoread
-autocmd FileType c,cpp,wls map <buffer> <leader><space> :w<cr>:make<cr>
-set completeopt=preview,menu 
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'frazrepo/vim-rainbow'
+Plugin 'scrooloose/nerdtree'
+Plugin 'ervandew/supertab'
+"Plugin 'zxqfl/tabnine-vim'
+"Plugin 'xuhdev/vim-latex-live-preview'
+call vundle#end()  
+let g:rainbow_active = 1
+map <C-n> :NERDTreeToggle<CR>
+map <C-g> :GitGutterLineHighlightsEnable<CR>
+let g:gitgutter_max_signs = 500  " default value
+"autocmd Filetype tex setl updatetime=1 "
+"pdf刷新频率,在mac上用起来还不如自己写的脚本
+"let g:livepreview_previewer = 'open -a Skim'
 filetype plugin on
+set autoread
+set completeopt=preview,menu 
 set nobackup
 set autowrite
 set ruler       
@@ -53,17 +26,17 @@ set cursorline
 set cursorcolumn
 set magic      
 set nocompatible
-set syntax=on
 set noeb
 set confirm
-"set autoindent
+set autoindent
 "set cindent
-"set tabstop=4
+set tabstop=4
 "set softtabstop=4
 "set shiftwidth=4
 set noexpandtab
 set smarttab
-set number
+"set number
+"------------->>>>>>>>>>>>
 set history=500
 set nobackup
 set noswapfile
@@ -76,27 +49,103 @@ set fencs=utf-8,ucs-bom,shift-jis,gb18030,gbk,gb2312,cp936
 set langmenu=zh_CN.UTF-8
 set helplang=cn
 set statusline=%F%m%r%h%w\ [FORMAT=%{&ff}]\ [TYPE=%Y]\ [POS=%l,%v][%p%%]\ %{strftime(\"%d/%m/%y\ -\ %H:%M\")}
-"set statusline=[%F]%y%r%m%*%=[Line:%l/%L,Column:%c][%p%%]
 set laststatus=2
 set cmdheight=2
-filetype on
 set viminfo+=!
 set linespace=0
-set wildmenu
-"set backspace=2
+set backspace=2
 set whichwrap+=<,>,h,l
- au BufRead,BufNewFile *  setfiletype txt
-function! ClosePair(char)
-	if getline('.')[col('.') - 1] == a:char
-		return "\<Right>"
-	else
-		return a:char
-	endif
-endfunction
-filetype plugin indent on 
 set completeopt=longest,menu
 set wildmenu
 set showcmd
-imap ii <Esc>
+set rnu
 au BufWinLeave * silent mkview
 au BufWinEnter * silent loadview
+syntax enable
+set background=dark
+colorscheme molokai
+let g:ackprg = 'ag --vimgrep'
+imap oo <Esc> 
+"之前用的ii不过感觉很糟糕
+
+"定义一些启动函数函数
+autocmd BufNewFile *.sh exec ":call SlsqySH()" 
+autocmd BufNewFile *.cpp exec ":call SlsqyCPP()" 
+autocmd BufNewFile *.py exec ":call SlsqyPY()"
+autocmd BufNewFile *.c exec ":call SlsqyC()" 
+autocmd BufNewFile *.tex exec ":call SlsqyTex()" 
+
+func SlsqySH() 
+	call setline(1,"\#########################################################################") 
+        call append(line("."), "\# FILE NAME: ".expand("%")) 
+        call append(line(".")+1, "\# AUTHOR: lsqyRobot") 
+        call append(line(".")+2, "\# MAIL: lsqyRobot@gmail.com") 
+        call append(line(".")+3, "\# CREATED TIME: ".strftime("%c")) 
+        call append(line(".")+4, "\#########################################################################") 
+        call append(line(".")+5, "\#!/bin/zsh") 
+        call append(line(".")+6, "") 
+	autocmd BufNewFile * normal G
+endfunc 
+
+func SlsqyCPP() 
+	call setline(1, "/*************************************************************************") 
+        call append(line("."), "    > File Name: ".expand("%")) 
+        call append(line(".")+1, "    > Author: lsqyRobot") 
+        call append(line(".")+2, "    > Mail: lsqyRobot@gmail.com ") 
+        call append(line(".")+3, "    > Created Time: ".strftime("%c")) 
+        call append(line(".")+4, " ************************************************************************/") 
+        call append(line(".")+5, "") 
+        call append(line(".")+6, "#include<iostream>")
+        call append(line(".")+7, "using namespace std;")
+        call append(line(".")+8, "")
+	autocmd BufNewFile * normal G
+endfunc 
+
+func SlsqyPY() 
+	call setline(1, "''' ") 
+        call append(line("."), "    > File Name: ".expand("%")) 
+        call append(line(".")+1, "    > Author: lsqyRobot") 
+        call append(line(".")+2, "    > Mail: lsqyRobot@gmail.com ") 
+        call append(line(".")+3, "    > Created Time: ".strftime("%c")) 
+        call append(line(".")+4, "'''") 
+        call append(line(".")+5, "# -*- coding:utf-8 -*- ")
+        call append(line(".")+6, "")
+	autocmd BufNewFile * normal G
+endfunc
+
+func SlsqyC() 
+	call setline(1, "/*************************************************************************") 
+        call append(line("."), "    > File Name: ".expand("%")) 
+        call append(line(".")+1, "    > Author: lsqyRobot") 
+        call append(line(".")+2, "    > Mail: lsqyRobot@gmail.com ") 
+        call append(line(".")+3, "    > Created Time: ".strftime("%c")) 
+        call append(line(".")+4, " ************************************************************************/") 
+        call append(line(".")+5, "") 
+        call append(line(".")+6, "#include<stdio.h>")
+        call append(line(".")+7, "")
+	autocmd BufNewFile * normal G
+endfunc
+
+
+func SlsqyTex() 
+	call setline(1, "%*************************************************************************") 
+        call append(line("."),   "%   > File Name: ".expand("%")) 
+        call append(line(".")+1, "%   > Author: lsqyRobot") 
+        call append(line(".")+2, "%   > Mail: lsqyRobot@gmail.com ") 
+        call append(line(".")+3, "%   > Created Time: ".strftime("%c")) 
+        call append(line(".")+4, "%***********************************************************************/") 
+	autocmd BufNewFile * normal G
+endfunc
+
+
+map rr :call CompileRunTEX()<CR>
+func! CompileRunTEX()
+    exec "w"
+    if &filetype == 'tex' 
+        "exec "LLPStartPreview"
+        exec "!make all"
+		"Have Makefile file to compile tex file.
+    end
+endfunc
+
+
