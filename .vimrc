@@ -1,5 +1,4 @@
-source ~/.vim/simple.vim
-set dictionary=~/.vim/myKeyWords.vim
+"set dictionary=~/.vim/myKeyWords.vim
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
@@ -13,8 +12,7 @@ let g:rainbow_active = 1
 map <C-n> :NERDTreeToggle<CR>
 map <C-g> :GitGutterLineHighlightsEnable<CR>
 let g:gitgutter_max_signs = 500  " default value
-"autocmd Filetype tex setl updatetime=1 "
-"pdf刷新频率,在mac上用起来还不如自己写的脚本
+"autocmd Filetype tex setl updatetime=1 " pdf刷新频率
 "let g:livepreview_previewer = 'open -a Skim'
 filetype plugin on
 set autoread
@@ -74,6 +72,10 @@ autocmd BufNewFile *.cpp exec ":call SlsqyCPP()"
 autocmd BufNewFile *.py exec ":call SlsqyPY()"
 autocmd BufNewFile *.c exec ":call SlsqyC()" 
 autocmd BufNewFile *.tex exec ":call SlsqyTex()" 
+autocmd BufNewFile *.m exec ":call SlsqyOctave()" 
+autocmd BufNewFile *.uml exec ":call SlsqyUML()" 
+
+
 
 func SlsqySH() 
 	call setline(1,"\#########################################################################") 
@@ -138,13 +140,45 @@ func SlsqyTex()
 endfunc
 
 
-map rr :call CompileRunTEX()<CR>
+
+func SlsqyOctave() 
+        source ~/.vim/mySimleLib/matlab.vim
+        set dictionary=~/.vim/mySimleLib/matlabLib.vim
+	call setline(1, "%*************************************************************************") 
+        call append(line("."),   "%   > File Name: ".expand("%")) 
+        call append(line(".")+1, "%   > Author: lsqyRobot") 
+        call append(line(".")+2, "%   > Mail: lsqyRobot@gmail.com ") 
+        call append(line(".")+3, "%   > Created Time: ".strftime("%c")) 
+        call append(line(".")+4, "%***********************************************************************/") 
+	autocmd BufNewFile * normal G
+endfunc
+
+func SlsqyUML() 
+	call setline(1, "/'************************************************************************") 
+        call append(line("."),   "%   > File Name: ".expand("%")) 
+        call append(line(".")+1, "%   > Author: lsqyRobot") 
+        call append(line(".")+2, "%   > Mail: lsqyRobot@gmail.com ") 
+        call append(line(".")+3, "%   > Created Time: ".strftime("%c")) 
+        call append(line(".")+4, "%**********************************************************************'/") 
+	autocmd BufNewFile * normal G
+endfunc
+
+
+
+"检测文件类型并加载相应脚本
+autocmd BufNewFile,BufRead *.md source ~/.vim/mySimleLib/forMysite.vim
+autocmd BufNewFile,BufRead *.tex source ~/.vim/mySimleLib/LaTex.vim
+autocmd BufNewFile,BufRead *.uml source ~/.vim/mySimleLib/plantUML.vim
+autocmd BufNewFile,BufRead *.uml set dictionary=~/.vim/mySimleLib/plantumlLib.vim
+
+
+
+map rr :call CompileRunTEX()<CR>     "Just for Tex
 func! CompileRunTEX()
     exec "w"
     if &filetype == 'tex' 
         "exec "LLPStartPreview"
         exec "!make all"
-		"Have Makefile file to compile tex file.
     end
 endfunc
 
