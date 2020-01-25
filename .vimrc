@@ -1,19 +1,15 @@
-"set dictionary=~/.vim/myKeyWords.vim
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'frazrepo/vim-rainbow'
 Plugin 'scrooloose/nerdtree'
 Plugin 'ervandew/supertab'
-"Plugin 'zxqfl/tabnine-vim'
 "Plugin 'xuhdev/vim-latex-live-preview'
 call vundle#end()  
 let g:rainbow_active = 1
 map <C-n> :NERDTreeToggle<CR>
 map <C-g> :GitGutterLineHighlightsEnable<CR>
 let g:gitgutter_max_signs = 500  " default value
-"autocmd Filetype tex setl updatetime=1 " pdf刷新频率
-"let g:livepreview_previewer = 'open -a Skim'
 filetype plugin on
 set autoread
 set completeopt=preview,menu 
@@ -27,7 +23,7 @@ set nocompatible
 set noeb
 set confirm
 set autoindent
-"set cindent
+set cindent
 set tabstop=4
 "set softtabstop=4
 "set shiftwidth=4
@@ -35,7 +31,7 @@ set noexpandtab
 set smarttab
 "set number
 "------------->>>>>>>>>>>>
-set history=500
+set history=1000
 set nobackup
 set noswapfile
 set hlsearch
@@ -63,10 +59,8 @@ syntax enable
 set background=dark
 colorscheme molokai
 let g:ackprg = 'ag --vimgrep'
-imap oo <Esc> 
-"之前用的ii不过感觉很糟糕
-
-"定义一些启动函数函数
+"imap oo <Esc> 
+"换了hhkb，就不必这么映射了
 autocmd BufNewFile *.sh exec ":call SlsqySH()" 
 autocmd BufNewFile *.cpp exec ":call SlsqyCPP()" 
 autocmd BufNewFile *.py exec ":call SlsqyPY()"
@@ -74,7 +68,6 @@ autocmd BufNewFile *.c exec ":call SlsqyC()"
 autocmd BufNewFile *.tex exec ":call SlsqyTex()" 
 autocmd BufNewFile *.m exec ":call SlsqyOctave()" 
 autocmd BufNewFile *.uml exec ":call SlsqyUML()" 
-
 
 
 func SlsqySH() 
@@ -165,7 +158,7 @@ endfunc
 
 
 
-"检测文件类型并加载相应脚本
+"检测文件类型并加载相应脚本, 一开始都加载的话，势必会造成启动的慢速。
 autocmd BufNewFile,BufRead *.md source ~/.vim/mySimleLib/forMysite.vim
 autocmd BufNewFile,BufRead *.tex source ~/.vim/mySimleLib/LaTex.vim
 autocmd BufNewFile,BufRead *.uml source ~/.vim/mySimleLib/plantUML.vim
@@ -173,13 +166,13 @@ autocmd BufNewFile,BufRead *.uml set dictionary=~/.vim/mySimleLib/plantumlLib.vi
 
 
 
-map rr :call CompileRunTEX()<CR>     "Just for Tex
-func! CompileRunTEX()
+map rr :call CompileRun()<CR>     "以后就统一这个来编译所有的代码，当然，以后会接触一些十分不用的调试工具，再看吧。
+func! CompileRun()
     exec "w"
-    if &filetype == 'tex' 
-        "exec "LLPStartPreview"
-        exec "!make all"
-    end
+	if &filetype == 'tex' 
+	    exec "!make all"
+	end
+	if &filetype == 'cpp'
+    	exec "!make all"       
+        end
 endfunc
-
-
