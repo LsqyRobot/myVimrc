@@ -11,6 +11,9 @@ map <C-n> :NERDTreeToggle<CR>
 map <C-g> :GitGutterLineHighlightsEnable<CR>
 let g:gitgutter_max_signs = 500  " default value
 filetype plugin on
+set ts=4
+set expandtab
+%retab!
 set autoread
 set completeopt=preview,menu 
 set nobackup
@@ -24,13 +27,12 @@ set noeb
 set confirm
 set autoindent
 set cindent
-set tabstop=4
-"set softtabstop=4
-"set shiftwidth=4
+set tabstop=2
+set softtabstop=4
+set shiftwidth=4
 set noexpandtab
 set smarttab
 "set number
-"------------->>>>>>>>>>>>
 set history=1000
 set nobackup
 set noswapfile
@@ -59,8 +61,6 @@ syntax enable
 set background=dark
 colorscheme molokai
 let g:ackprg = 'ag --vimgrep'
-"imap oo <Esc> 
-"换了hhkb，就不必这么映射了
 autocmd BufNewFile *.sh exec ":call SlsqySH()" 
 autocmd BufNewFile *.cpp exec ":call SlsqyCPP()" 
 autocmd BufNewFile *.py exec ":call SlsqyPY()"
@@ -160,13 +160,12 @@ endfunc
 
 "检测文件类型并加载相应脚本, 一开始都加载的话，势必会造成启动的慢速。
 autocmd BufNewFile,BufRead *.md source ~/.vim/mySimleLib/forMysite.vim
-autocmd BufNewFile,BufRead *.tex source ~/.vim/mySimleLib/LaTex.vim
+autocmd BufNewFile,BufRead *.tex  source ~/.vim/mySimleLib/LaTex.vim
+autocmd BufNewFile,BufRead *.cls  source ~/.vim/mySimleLib/LaTex.vim
 autocmd BufNewFile,BufRead *.uml source ~/.vim/mySimleLib/plantUML.vim
 autocmd BufNewFile,BufRead *.uml set dictionary=~/.vim/mySimleLib/plantumlLib.vim
 
-
-
-map rr :call CompileRun()<CR>     "以后就统一这个来编译所有的代码，当然，以后会接触一些十分不用的调试工具，再看吧。
+map rr :call CompileRun()<CR>     "以后尝试将所有的程序统一使用makefile来编译。
 func! CompileRun()
     exec "w"
 	if &filetype == 'tex' 
@@ -176,3 +175,9 @@ func! CompileRun()
     	exec "!make all"       
         end
 endfunc
+
+
+hi TabLine      ctermfg=Black  ctermbg=Green     cterm=NONE
+hi TabLineFill  ctermfg=Black  ctermbg=Green     cterm=NONE
+hi TabLineSel   ctermfg=White  ctermbg=DarkBlue  cterm=NONE
+let g:tablineclosebutton=1
