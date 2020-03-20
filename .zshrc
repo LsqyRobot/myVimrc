@@ -1,26 +1,18 @@
 export ZSH="/Users/lsqyRobot/.oh-my-zsh"
 ZSH_THEME="robbyrussell"
 source $ZSH/oh-my-zsh.sh
-plugins=(git
-         zsh-autosuggestions	
-	 wd
-	 extract
-	 z
-	)
+plugins=(git zsh-autosuggestions	wd extract z)
 source /Users/lsqyRobot/.zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /usr/local/opt/nvm/nvm.sh
 alias pdf='open'
 alias m='make all'
 alias uml='java -jar /Users/lsqyRobot/Applications/plant.jar -charset UTF-8'
-bindkey -v
+bindkey -v  #vim mode
 alias paper='wd great && vim greatThesis.tex' 
 alias octave='octave --no-gui'
 alias py3='conda activate lsqyPy3'
 alias py2='conda activate lsqyPy2'
-alias note='cd /Users/lsqyRobot/myShell/card; vim card.tex'
-export PATH="/Users/lsqyRobot/Multibody-Dynamics:$PATH"
 alias octave='octave-cli'
-
 # added by Anaconda3 2019.10 installer
 # >>> conda init >>>
 # !! Contents within this block are managed by 'conda init' !!
@@ -37,7 +29,4 @@ else
 fi
 unset __conda_setup
 # <<< conda init <<<
-
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
-alias doc='cd /Users/lsqyRobot/eftRobot/doc/; vim eftRobot.tex'
