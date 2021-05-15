@@ -1,4 +1,0 @@
-"ForLaTex
-multicolumn
-multirow
-texForHightLight
