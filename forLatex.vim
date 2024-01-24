@@ -1,0 +1,31 @@
+iabbr tex <img src="https://latex.codecogs.com/png.latex?     "/>
+iabbr img ![](/img/postImg/)
+iabbr omega <img src="/img/postImg/mathSym/omega.png" width="1%" height="1%">
+iabbr theta <img src="/img/postImg/mathSym/theta.png" width="0.7%" height="0.7%">
+iabbr alpha <img src="/img/postImg/mathSym/alpha.png" width="1%" height="1%">
+iabbr beta <img src="/img/postImg/mathSym/beta.png" width="1%" height="1%">
+iabbr gamma <img src="/img/postImg/mathSym/gamma.png" width="1%" height="1%">
+iabbr delta <img src="/img/postImg/mathSym/delta.png" width="1%" height="1%">
+iabbr Delta <img src="/img/postImg/mathSym/Delta.png" width="1%" height="1%">
+iabbr nu <img src="/img/postImg/mathSym/nu.png" width="1%" height="1%">
+iabbr in <img src="/img/postImg/mathSym/in.png" width="1%" height="1%">
+iabbr tau <img src="/img/postImg/mathSym/tau.png" width="1%" height="1%">
+iabbr dot_q <img src="/img/postImg/mathSym/dot_q.png" width="1%" height="1%">
+iabbr dot_theta <img src="/img/postImg/mathSym/dot_theta.png" width="1%" height="1%">
+iabbr hat_omega <img src="/img/postImg/mathSym/hat_omega.png" width="1%" height="1%">
+iabbr hat_omega_s <img src="/img/postImg/mathSym/hat_omega_s.png" width="1%" height="1%">
+iabbr  e_omega_theta <img src="/img/postImg/mathSym/e_omega_theta.png" width="2%" height="2%">
+iabbr hat_omega_theta_in_R_3 <img src="/img/postImg/mathSym/hat_omega_theta_in_R_3.png" width="1%" height="1%">
+iabbr R_3 <img src="/img/postImg/mathSym/R_3.png" width="1.7%" height="1.7%">
+iabbr dot_R <img src="/img/postImg/mathSym/dot_R.png" width="1%" height="1%">
+iabbr R_T <img src="/img/postImg/mathSym/R_T.png" width="1.7%" height="1.7%">
+iabbr omega_b <img src="/img/postImg/mathSym/omega_b.png" width="1.7%" height="1.7%">
+iabbr omega_s <img src="/img/postImg/mathSym/omega_s.png" width="1.7%" height="1.7%">
+iabbr dot_T <img src="/img/postImg/mathSym/dot_T.png" width="1.7%" height="1.7%">
+iabbr R_1 <img src="/img/postImg/mathSym/R_1.png" width="1.7%" height="1.7%">
+iabbr T_1 <img src="/img/postImg/mathSym/T_1.png" width="1.7%" height="1.7%">
+iabbr dot_p <img src="/img/postImg/mathSym/dot_p.png" width="1.7%" height="1.7%">
+iabbr nu <img src="/img/postImg/mathSym/nu.png" width="1.7%" height="1.7%">
+iabbr Nu <img src="/img/postImg/mathSym/Nu.png" width="1.7%" height="1.7%">
+iabbr nu_b <img src="/img/postImg/mathSym/nu_b.png" width="1.7%" height="1.7%">
+iabbr Nu_b <img src="/img/postImg/mathSym/Nu_b.png" width="1.7%" height="1.7%">
