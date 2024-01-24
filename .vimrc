@@ -1,15 +1,17 @@
 set nocompatible              " be iMproved, required
 filetype off                  " required
-" set the runtime path to include Vundle and initialize
+" 管理插件的工具
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
+Plugin 'rking/ag.vim'
 Plugin 'frazrepo/vim-rainbow'
 Plugin 'kien/rainbow_parentheses.vim'  			" 花里胡哨的彩虹括号 -- 先试试看
-Plugin 'tomasr/molokai'
+Plugin 'tomasr/molokai'                         " 目前个人喜欢的配色
 Plugin 'davidhalter/jedi-vim'
 Plugin 'flazz/vim-colorschemes'
-Plugin 'scrooloose/nerdtree'
+Plugin 'scrooloose/nerdtree'                    " 文件树, 用于浏览当前目录
+Plugin 'tpope/vim-commentary'                   " 辅助快速注释用的
 Plugin 'mzlogin/vim-markdown-toc'     			" 主要是在markdown里面生成目录的
 Plugin 'ianva/vim-youdao-translater'   			" 利用有道云实现翻译
 Plugin 'ervandew/supertab'  					" 比<C+n> 强一些 
@@ -17,9 +19,10 @@ Plugin 'ervandew/supertab'  					" 比<C+n> 强一些
 Plugin 'vim-scripts/taglist.vim'  				" 用于浏览函数的
 Plugin 'tpope/vim-fugitive'  				    " 主要是用于看了哪些修改下的跳转， 在使用Git的时候
 Plugin 'airblade/vim-gitgutter'   				" 主要用于直接查看做了哪些修改使用
-" Plugin 'scrooloose/syntastic'                 " 语法检测，尚未配置成功
+"Plugin 'scrooloose/syntastic'                  " 语法检测，尚未配置成功
 "Plugin 'ludovicchabant/vim-gutentags'          " 用于自动生成ctags的工具, 需要相应的配置
 "Plugin 'dense-analysis/ale'                    " 自动检查语法的工具, 不太好用
+Plugin 'itchyny/vim-cursorword'                 " 显示同一个出现的同一个单词
 call vundle#end()            
 filetype plugin indent on   
 let g:molokai_original = 1
@@ -62,7 +65,9 @@ set autoindent
 set incsearch   " 可以开启增量搜索，使得在搜索时可以实时匹配输入的字符，按 :set noincsearch 可以关闭增量搜索。
 au BufWinLeave * silent mkview
 au BufWinEnter * silent loadview
-" autocmd BufNewFile,BufRead *.md source ~/.vim/forLatex.vim
+
+autocmd BufNewFile,BufRead *.md source ~/.vim/forLatex.vim        "给自己网站加公式的时候用上的
+autocmd BufNewFile,BufRead *.html source ~/.vim/forHtml.vim       "给自己网站写时间线的时候用上的
 
 " 屏蔽掉最对YCM的设置
 " set for cpp
@@ -159,17 +164,15 @@ let g:pymode_python = 'python3'
 endif
 "===============================Jedi===================================
 
-
-
 " 用于语法检测
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
+" set statusline+=%#warningmsg#
+" set statusline+=%{SyntasticStatuslineFlag()}
+" set statusline+=%*
+" 
+" let g:syntastic_always_populate_loc_list = 1
+" let g:syntastic_auto_loc_list = 1
+" let g:syntastic_check_on_open = 1
+" let g:syntastic_check_on_wq = 0
 
 "
 " YouCompleteMe options
@@ -199,4 +202,38 @@ let g:ycm_confirm_extra_conf = 1
 let g:ycm_goto_buffer_command = 'same-buffer' "[ 'same-buffer', 'horizontal-split', 'vertical-split', 'new-tab' ]
 let g:ycm_filetype_whitelist = { '*': 1 }
 let g:ycm_key_invoke_completion = '<C-Space>'
+
+" 每行超过100个字符用下划线提示
+au BufRead,BufNewFile *.asm,*.c,*.cpp,*.java,*.cs,*.sh,*.lua,*.pl,*.pm,*.py,*.rb,*.hs,*.vim 2match Underlined /.\%101v/
+
+" 用于快速注释的配置
+autocmd FileType apache setlocal commentstring=#\ %s
+
+" 更加智能的当前行高亮
+autocmd InsertLeave,WinEnter * set cursorline
+autocmd InsertEnter,WinLeave * set nocursorline
+
+
+function! AddTitle()      " 增加个人信息
+  call append(0, "/********************************************************")
+  call append(1, "* Author : zhangxiaolong")
+  call append(2, "* Email : lsqyRobot@gmail.com")
+  call append(3, "* Last modified : ".strftime("%Y-%m-%d %H:%M"))
+  call append(4, "* Filename : ".expand("%:t"))
+  call append(5, "* Description : ")
+  call append(6, "*************")
+endfunction
+
+" 打开文件时恢复光标位置
+autocmd BufReadPost *
+    \ if line("'\"") > 1 && line("'\"") <= line("$") |
+    \   exe "normal! g`\"" |
+    \ endif
+
+
+
+
+
+
+
 
