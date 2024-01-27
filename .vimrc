@@ -6,19 +6,19 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'rking/ag.vim'
 Plugin 'frazrepo/vim-rainbow'
-Plugin 'kien/rainbow_parentheses.vim'  			" 花里胡哨的彩虹括号 -- 先试试看
+Plugin 'kien/rainbow_parentheses.vim'           " 花里胡哨的彩虹括号 -- 先试试看
 Plugin 'tomasr/molokai'                         " 目前个人喜欢的配色
 Plugin 'davidhalter/jedi-vim'
 Plugin 'flazz/vim-colorschemes'
 Plugin 'scrooloose/nerdtree'                    " 文件树, 用于浏览当前目录
 Plugin 'tpope/vim-commentary'                   " 辅助快速注释用的
-Plugin 'mzlogin/vim-markdown-toc'     			" 主要是在markdown里面生成目录的
-Plugin 'ianva/vim-youdao-translater'   			" 利用有道云实现翻译
-Plugin 'ervandew/supertab'  					" 比<C+n> 强一些 
-" Plugin 'esukram/taglist-vim'  				" 用于浏览函数的
-Plugin 'vim-scripts/taglist.vim'  				" 用于浏览函数的
-Plugin 'tpope/vim-fugitive'  				    " 主要是用于看了哪些修改下的跳转， 在使用Git的时候
-Plugin 'airblade/vim-gitgutter'   				" 主要用于直接查看做了哪些修改使用
+Plugin 'mzlogin/vim-markdown-toc'               " 主要是在markdown里面生成目录的
+Plugin 'ianva/vim-youdao-translater'            " 利用有道云实现翻译
+Plugin 'ervandew/supertab'                      " 比<C+n> 强一些 
+" Plugin 'esukram/taglist-vim'                  " 用于浏览函数的
+Plugin 'vim-scripts/taglist.vim'                " 用于浏览函数的
+Plugin 'tpope/vim-fugitive'                     " 主要是用于看了哪些修改下的跳转， 在使用Git的时候
+Plugin 'airblade/vim-gitgutter'                 " 主要用于直接查看做了哪些修改使用
 "Plugin 'scrooloose/syntastic'                  " 语法检测，尚未配置成功
 "Plugin 'ludovicchabant/vim-gutentags'          " 用于自动生成ctags的工具, 需要相应的配置
 "Plugin 'dense-analysis/ale'                    " 自动检查语法的工具, 不太好用
