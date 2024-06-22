@@ -15,6 +15,7 @@ Plugin 'tpope/vim-commentary'                   " 辅助快速注释用的
 Plugin 'mzlogin/vim-markdown-toc'     			" 主要是在markdown里面生成目录的
 Plugin 'ianva/vim-youdao-translater'   			" 利用有道云实现翻译
 Plugin 'ervandew/supertab'  					" 比<C+n> 强一些 
+" Plugin 'esukram/taglist-vim'  				" 用于浏览函数的
 Plugin 'vim-scripts/taglist.vim'  				" 用于浏览函数的
 Plugin 'tpope/vim-fugitive'  				    " 主要是用于看了哪些修改下的跳转， 在使用Git的时候
 Plugin 'airblade/vim-gitgutter'   				" 主要用于直接查看做了哪些修改使用
@@ -22,7 +23,7 @@ Plugin 'airblade/vim-gitgutter'   				" 主要用于直接查看做了哪些修�
 "Plugin 'ludovicchabant/vim-gutentags'          " 用于自动生成ctags的工具, 需要相应的配置
 "Plugin 'dense-analysis/ale'                    " 自动检查语法的工具, 不太好用
 Plugin 'itchyny/vim-cursorword'                 " 显示同一个出现的同一个单词
-Plugin 'tpope/vim-surround'                      " 快捷键 如cs"
+"Plugin 'lervag/vimtex'                          " 使用vim来写LaTex -- 试试， 不好用就删除
 call vundle#end()            
 filetype plugin indent on   
 let g:molokai_original = 1
@@ -53,13 +54,13 @@ set nu
 syntax enable
 se noro
 set nomore
-" 与设置缩进4个空格相关, 但是我感觉好像没啥用处，每次还是以一个tab键来占位
+" 与设置缩进4个空格相关
 set tabstop=4
 set shiftwidth=4
 set ts=4        " 设置tab键为4个空格
 set softtabstop=4
 set expandtab
-set autoindent
+" set autoindent
 " 结束设置缩进4个空格
 set incsearch   " 可以开启增量搜索，使得在搜索时可以实时匹配输入的字符，按 :set noincsearch 可以关闭增量搜索。
 au BufWinLeave * silent mkview
@@ -92,9 +93,12 @@ endfunction
 
 " 设置 ctags
 let Tlist_Ctags_Cmd="/opt/homebrew/bin/ctags"
-set tags=../*/tags,./*/tags,./tags,./../tags,./../../tags,./../../../tags,./../../../../tags,./../../../../../../tags,./../../../../../../../../../tags,
+set tags=../*/tags,./*/tags,./tags,./../tags,./../../tags   " 没有开启gutentags 前的配置
+" set tags=/Users/zhangxiaolong/.cache/tags/*.tags
+" set tags=./.tags;,.tags   
 let Tlist_Show_One_File=1      " 给taglist设置的, 不同时显示多个文件的tag，只显示当前文件的
 let Tlist_Exit_OnlyWindow=1    " 同上，如果taglist窗口是最后一个窗口，则退出vim
+" let Tlist_Use_Right_Window=1   "同上， 在右侧窗口中显示taglist窗口, 默认为左侧， 我还是比较喜欢左侧的 
 
 " 针对花里胡哨的彩虹括号
 let g:rbpt_colorpairs = [
@@ -126,10 +130,27 @@ vnoremap <silent> <C-T> :<C-u>Ydv<CR>
 nnoremap <silent> <C-T> :<C-u>Ydc<CR>
 noremap <leader>yd :<C-u>Yde<CR>
 
+" set signcolumn=number   "在使用vim-gitgutter同时显示修改以及行号所使用, 要求vim版本在8.0以上
+" " 配置vim-gutentags  -- 暂时不进行配置
+" " gutentags 搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归
+" let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
+" " 所生成的数据文件的名称
+" let g:gutentags_ctags_tagfile = 'tags'
+" " 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中，避免污染工程目录
+" let s:vim_tags = expand('~/.cache/tags')
+" let g:gutentags_cache_dir = s:vim_tags
+" " 配置 ctags 的参数
+" let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q']
+" let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
+" let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
+
+" 检测 ~/.cache/tags 不存在就新建
+" if !isdirectory(s:vim_tags)
+"    silent! call mkdir(s:vim_tags, 'p')
+" endif
 
 
-
-" 补全python代码, 感觉补全的太多了，不太推荐使用
+" 补全python代码, 效果目前不太好，暂时不用
 "===============================Jedi==================================
 if has('python3')
 let g:loaded_youcompleteme = 1 " 判断如果是python3的话，就禁用ycmd。
@@ -177,6 +198,8 @@ let g:ycm_goto_buffer_command = 'same-buffer' "[ 'same-buffer', 'horizontal-spli
 let g:ycm_filetype_whitelist = { '*': 1 }
 let g:ycm_key_invoke_completion = '<C-Space>'
 
+
+
 let g:ycm_add_preview_to_completeopt = 0
 let g:ycm_show_diagnostics_ui = 0
 let g:ycm_server_log_level = 'info'
@@ -192,7 +215,7 @@ let g:ycm_semantic_triggers =  {
 
 
 " 每行超过100个字符用下划线提示
-" au BufRead,BufNewFile *.asm,*.c,*.cpp,*.java,*.cs,*.sh,*.lua,*.pl,*.pm,*.py,*.rb,*.hs,*.vim 2match Underlined /.\%101v/
+au BufRead,BufNewFile *.asm,*.c,*.cpp,*.java,*.cs,*.sh,*.lua,*.pl,*.pm,*.py,*.rb,*.hs,*.vim 2match Underlined /.\%101v/
 
 " 用于快速注释的配置
 autocmd FileType apache setlocal commentstring=#\ %s
@@ -218,6 +241,61 @@ autocmd BufReadPost *
     \   exe "normal! g`\"" |
     \ endif
 
+" 与vimTex 相关配置
+" let g:vimtex_view_method = 'zathura'
+" let g:vimtex_view_method = 'TeXShop'
+" " Or with a generic interface:
+" let g:vimtex_view_general_viewer = 'okular'
+" let g:vimtex_view_general_options = '--unique file:@pdf\#src:@line@tex'
+
+" strongly recommended, you probably don't need to configure anything. If you
+" want another compiler backend, you can change it as follows. The list of
+" supported backends and further explanation is provided in the documentation,
+" see ":help vimtex-compiler".
+let g:vimtex_compiler_method = 'latexrun'
+
+" Most VimTeX mappings rely on localleader and this can be changed with the
+" following line. The default is usually fine and is the symbol "\".
+let maplocalleader = ","
+
+let g:vimtex_compiler_latexmk_engines = {
+    \ '_'                : '-pdf',
+    \ 'pdflatex'         : '-pdf',
+    \ 'dvipdfex'         : '-pdfdvi',
+    \ 'lualatex'         : '-lualatex',
+    \ 'xelatex'          : '-xelatex',
+    \ 'context (pdftex)' : '-pdf -pdflatex=texexec',
+    \ 'context (luatex)' : '-pdf -pdflatex=context',
+    \ 'context (xetex)'  : '-pdf -pdflatex=''texexec --xtx''',
+    \}
+
+
+"这里是设置latexmk工具的可选参数
+let g:vimtex_compiler_latexmk = {
+    \ 'build_dir' : '',
+    \ 'callback' : 1,
+    \ 'continuous' : 1,
+    \ 'executable' : 'latexmk',
+    \ 'hooks' : [],
+    \ 'options' : [
+    \   '-verbose',
+    \   '-file-line-error',
+    \   '-shell-escape',
+    \   '-synctex=1',
+    \   '-interaction=nonstopmode',
+    \ ],
+    \}
+
+" 自定义latex编译
+function! TexRun()  
+  if &filetype == 'tex'
+      execute "rm *.log *.pdf *.atfi *.aux *.toc *.out"
+      let texFile=expand("%")
+      execute "!xelatex -interaction=nonstopmode  -shell-escape ".texFile
+      " echo "current file name is:".texFile
+  endif
+endfunction
+
 "定义一些启动函数函数
 autocmd BufNewFile *.sh exec ":call SlsqySH()" 
 autocmd BufNewFile *.cpp exec ":call SlsqyCPP()" 
@@ -232,7 +310,7 @@ autocmd BufNewFile *.uml exec ":call SlsqyUML()"
 func SlsqySH() 
 	call setline(1,"\#########################################################################") 
         call append(line("."), "\# FILE NAME: ".expand("%")) 
-        call append(line(".")+1, "\# AUTHOR: zhangxiaolong") 
+        call append(line(".")+1, "\# AUTHOR: lsqyRobot") 
         call append(line(".")+2, "\# MAIL: lsqyRobot@gmail.com") 
         call append(line(".")+3, "\# CREATED TIME: ".strftime("%c")) 
         call append(line(".")+4, "\#########################################################################") 
@@ -244,7 +322,7 @@ endfunc
 func SlsqyCPP() 
 	call setline(1, "/*************************************************************************") 
         call append(line("."), "    > File Name: ".expand("%")) 
-        call append(line(".")+1, "    > Author: zhangxiaolong") 
+        call append(line(".")+1, "    > Author: lsqyRobot") 
         call append(line(".")+2, "    > Mail: lsqyRobot@gmail.com ") 
         call append(line(".")+3, "    > Created Time: ".strftime("%c")) 
         call append(line(".")+4, " ************************************************************************/") 
@@ -258,7 +336,7 @@ endfunc
 func SlsqyPY() 
 	call setline(1, "''' ") 
         call append(line("."), "    > File Name: ".expand("%")) 
-        call append(line(".")+1, "    > Author: zhangxiaolong") 
+        call append(line(".")+1, "    > Author: lsqyRobot") 
         call append(line(".")+2, "    > Mail: lsqyRobot@gmail.com ") 
         call append(line(".")+3, "    > Created Time: ".strftime("%c")) 
         call append(line(".")+4, "'''") 
@@ -270,7 +348,7 @@ endfunc
 func SlsqyC() 
 	call setline(1, "/*************************************************************************") 
         call append(line("."), "    > File Name: ".expand("%")) 
-        call append(line(".")+1, "    > Author: zhangxiaolong") 
+        call append(line(".")+1, "    > Author: lsqyRobot") 
         call append(line(".")+2, "    > Mail: lsqyRobot@gmail.com ") 
         call append(line(".")+3, "    > Created Time: ".strftime("%c")) 
         call append(line(".")+4, " ************************************************************************/") 
@@ -283,7 +361,7 @@ endfunc
 func SlsqyTex() 
 	call setline(1, "%*************************************************************************") 
         call append(line("."),   "%   > File Name: ".expand("%")) 
-        call append(line(".")+1, "%   > Author: zhangxiaolong") 
+        call append(line(".")+1, "%   > Author: lsqyRobot") 
         call append(line(".")+2, "%   > Mail: lsqyRobot@gmail.com ") 
         call append(line(".")+3, "%   > Created Time: ".strftime("%c")) 
         call append(line(".")+4, "%***********************************************************************/") 
@@ -293,7 +371,7 @@ endfunc
 func SlsqyOctave() 
 	call setline(1, "%*************************************************************************") 
         call append(line("."),   "%   > File Name: ".expand("%")) 
-        call append(line(".")+1, "%   > Author: zhangxiaolong") 
+        call append(line(".")+1, "%   > Author: lsqyRobot") 
         call append(line(".")+2, "%   > Mail: lsqyRobot@gmail.com ") 
         call append(line(".")+3, "%   > Created Time: ".strftime("%c")) 
         call append(line(".")+4, "%***********************************************************************/") 
@@ -303,9 +381,38 @@ endfunc
 func SlsqyUML() 
 	call setline(1, "/'************************************************************************") 
         call append(line("."),   "%   > File Name: ".expand("%")) 
-        call append(line(".")+1, "%   > Author: zhangxiaolong") 
+        call append(line(".")+1, "%   > Author: lsqyRobot") 
         call append(line(".")+2, "%   > Mail: lsqyRobot@gmail.com ") 
         call append(line(".")+3, "%   > Created Time: ".strftime("%c")) 
         call append(line(".")+4, "%**********************************************************************'/") 
 	autocmd BufNewFile * normal G
 endfunc
+
+
+
+
+
+"  " Begin gutentags configure   " 目前发现不太好用，以后再试试
+"  
+"  " gutentags 搜索工程目录的标志，碰到这些文件/目录名就停止向上一级目录递归
+"  let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
+"  
+"  " 所生成的数据文件的名称
+"  let g:gutentags_ctags_tagfile = '.tags'
+"  
+"  " 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中，避免污染工程目录
+"  let s:vim_tags = expand('~/.cache/tags')
+"  let g:gutentags_cache_dir = s:vim_tags
+"  
+"  " 配置 ctags 的参数
+"  let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q']
+"  let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
+"  let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
+"  
+"  " 检测 ~/.cache/tags 不存在就新建
+"  if !isdirectory(s:vim_tags)
+"     silent! call mkdir(s:vim_tags, 'p')
+"  endif
+"  
+"  
+"  " End gutentags configure
