@@ -309,3 +309,5 @@ func SlsqyUML()
         call append(line(".")+4, "%**********************************************************************'/") 
 	autocmd BufNewFile * normal G
 endfunc
+" 每次调整 Vim 窗口大小时，将所有窗口调整为相等的大小。
+autocmd VimResized * wincmd =
