@@ -65,10 +65,6 @@ set incsearch   " 可以开启增量搜索，使得在搜索时可以实时匹�
 au BufWinLeave * silent mkview
 au BufWinEnter * silent loadview
 
-autocmd BufNewFile,BufRead *.md source ~/.vim/forLatex.vim        "给自己网站加公式的时候用上的
-autocmd BufNewFile,BufRead *.html source ~/.vim/forHtml.vim       "给自己网站写时间线的时候用上的
-autocmd BufNewFile,BufRead *.tex source ~/.vim/forEquation.vim    "给LaTex用的
-
 " 设置 gD 查找函数的最初定义位置
 nnoremap <leader>gd :call GotoDef()<CR>
 function! GotoDef()
