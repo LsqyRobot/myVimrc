@@ -87,21 +87,7 @@ let g:rbpt_colorpairs = [
 let g:rbpt_max = 16
 let g:rbpt_loadcmd_toggle = 0
 
-" 利用有道云在线实现翻译的一些配置
-vnoremap <silent> <C-T> :<C-u>Ydv<CR>
-nnoremap <silent> <C-T> :<C-u>Ydc<CR>
-noremap <leader>yd :<C-u>Yde<CR>
-
-" 每行超过100个字符用下划线提示
-" au BufRead,BufNewFile *.asm,*.c,*.cpp,*.java,*.cs,*.sh,*.lua,*.pl,*.pm,*.py,*.rb,*.hs,*.vim 2match Underlined /.\%101v/
-
-" 用于快速注释的配置
-autocmd FileType apache setlocal commentstring=#\ %s
-
 " 更加智能的当前行高亮
 autocmd InsertLeave,WinEnter * set cursorline
 autocmd InsertEnter,WinLeave * set nocursorline
 
-" vim header
-let g:header_field_author = 'zhangxiaolong'
-let g:header_field_author_email = 'lsqyRobot@gmail.com'
