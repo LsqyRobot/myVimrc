@@ -28,7 +28,6 @@ colorscheme molokai
 
 set wildmenu
 set wildmode=full
-set completeopt=menu,menuone,preview
 set nobackup
 set autowrite
 set ruler
