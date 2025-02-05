@@ -3,7 +3,6 @@ filetype off
 "install methods:  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 " 采用更现代化的管理插件工具
 call plug#begin('~/.vim/plugged')
-Plug 'VundleVim/Vundle.vim'
 Plug 'rking/ag.vim'                           " 对于vimgrep 的 搜索优化
 Plug 'frazrepo/vim-rainbow'                   " 都是彩虹屁
 Plug 'kien/rainbow_parentheses.vim'           " 花里胡哨的彩虹括号 -- 先试试看
@@ -13,16 +12,15 @@ Plug 'flazz/vim-colorschemes'                 " 应该是和代码配色相关�
 Plug 'scrooloose/nerdtree'                    " 文件树, 用于浏览当前目录
 Plug 'tpope/vim-commentary'                   " 辅助快速注释用的
 Plug 'mzlogin/vim-markdown-toc'               " 主要是在markdown里面生成目录的
-Plug 'ianva/vim-youdao-translater'            " 利用有道云实现翻译
 Plug 'ervandew/supertab'                      " 比<C+n> 强一些 
 Plug 'vim-scripts/taglist.vim'                " 用于浏览函数的
 Plug 'tpope/vim-fugitive'                     " 主要是用于看了哪些修改下的跳转， 在使用Git的时候
 Plug 'airblade/vim-gitgutter'                 " 主要用于直接查看做了哪些修改使用
 Plug 'itchyny/vim-cursorword'                 " 显示同一个出现的同一个单词
+Plug 'vim-airline/vim-airline'                " 更美观的状态栏
 call plug#end()
 
-
-filetype plugin indent on   
+filetype plugin on
 let g:molokai_original = 1
 let g:ackprg = 'ag --vimgrep'
 map <C-n> :NERDTreeToggle<CR>
@@ -39,7 +37,6 @@ set noswapfile
 set hlsearch
 set fencs=utf-8,ucs-bom,shift-jis,gb18030,gbk,gb2312,cp936o
 set langmenu=zh_CN.UTF-8
-set statusline=%F%m%r%h%w\ [FORMAT=%{&ff}]\ [TYPE=%Y]\ [POS=%l,%v][%p%%]\ %{strftime(\"%d/%m/%y\ -\ %H:%M\")}
 set laststatus=2
 set cmdheight=2
 set viminfo+=!
@@ -59,6 +56,9 @@ set autoindent
 " 结束设置缩进4个空格
 
 set incsearch   " 可以开启增量搜索，使得在搜索时可以实时匹配输入的字符，按 :set noincsearch 可以关闭增量搜索。
+set ignorecase
+set smartcase
+
 au BufWinLeave * silent mkview
 au BufWinEnter * silent loadview
 
@@ -87,54 +87,11 @@ let g:rbpt_colorpairs = [
     \ ]
 let g:rbpt_max = 16
 let g:rbpt_loadcmd_toggle = 0
-au VimEnter * RainbowParenthesesToggle
-au Syntax * RainbowParenthesesLoadRound
-au Syntax * RainbowParenthesesLoadSquare
-au Syntax * RainbowParenthesesLoadBraces
 
 " 利用有道云在线实现翻译的一些配置
 vnoremap <silent> <C-T> :<C-u>Ydv<CR>
 nnoremap <silent> <C-T> :<C-u>Ydc<CR>
 noremap <leader>yd :<C-u>Yde<CR>
-
-let g:ycm_register_as_syntastic_checker = 1 "default 1
-let g:Show_diagnostics_ui = 1 "default 1
-
-"will put icons in Vim's gutter on lines that have a diagnostic set.
-"Turning this off will also turn off the YcmErrorLine and YcmWarningLine
-"highlighting
-let g:ycm_enable_diagnostic_signs = 1
-let g:ycm_enable_diagnostic_highlighting = 0
-let g:ycm_always_populate_location_list = 1 "default 0
-let g:ycm_open_loclist_on_ycm_diags = 1 "default 1
-
-let g:ycm_complete_in_strings = 1 "default 1
-let g:ycm_collect_identifiers_from_tags_files = 0 "default 0
-let g:ycm_path_to_python_interpreter = '' "default ''
-
-let g:ycm_server_use_vim_stdout = 0 "default 0 (logging to console)
-let g:ycm_server_log_level = 'info' "default info
-
-let g:ycm_global_ycm_extra_conf = '~/.ycm_extra_conf.py'  "where to search for .ycm_extra_conf.py if not found
-let g:ycm_confirm_extra_conf = 1
-
-let g:ycm_goto_buffer_command = 'same-buffer' "[ 'same-buffer', 'horizontal-split', 'vertical-split', 'new-tab' ]
-let g:ycm_filetype_whitelist = { '*': 1 }
-let g:ycm_key_invoke_completion = '<C-Space>'
-
-let g:ycm_add_preview_to_completeopt = 0
-let g:ycm_show_diagnostics_ui = 0
-let g:ycm_server_log_level = 'info'
-let g:ycm_min_num_identifier_candidate_chars = 2
-let g:ycm_collect_identifiers_from_comments_and_strings = 1
-set completeopt=menu,menuone
-
-let g:ycm_semantic_triggers =  {
-           \ 'c,cpp,python,java,go,erlang,perl': ['re!\w{2}'],
-           \ 'cs,lua,javascript': ['re!\w{2}'],
-           \ }
-" end YCM config
-
 
 " 每行超过100个字符用下划线提示
 " au BufRead,BufNewFile *.asm,*.c,*.cpp,*.java,*.cs,*.sh,*.lua,*.pl,*.pm,*.py,*.rb,*.hs,*.vim 2match Underlined /.\%101v/
