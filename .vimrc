@@ -18,6 +18,8 @@ Plug 'tpope/vim-fugitive'                     " 主要是用于看了哪些修�
 Plug 'airblade/vim-gitgutter'                 " 主要用于直接查看做了哪些修改使用
 Plug 'itchyny/vim-cursorword'                 " 显示同一个出现的同一个单词
 Plug 'vim-airline/vim-airline'                " 更美观的状态栏
+Plug 'alpertuna/vim-header'                   " 增加作者信息
+Plug 'github/copilot.vim'                     " github 上的copilot 工具
 call plug#end()
 
 filetype plugin on
@@ -91,3 +93,7 @@ let g:rbpt_loadcmd_toggle = 0
 autocmd InsertLeave,WinEnter * set cursorline
 autocmd InsertEnter,WinLeave * set nocursorline
 
+" 添加个人信息
+let g:header_field_author = 'zhangxiaolong'
+let g:header_field_author_email = 'lsqyRobot@gmail.com'
+let g:header_auto_add_header = 1
