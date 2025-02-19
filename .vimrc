@@ -1,3 +1,10 @@
+" File              : .vimrc
+" Author            : zhangxiaolong <zhangxiaolong@gotokepler.com>
+" Date              : 2025-02-13
+" Last Modified Date: 2025-02-19
+" Last Modified By  : zhangxiaolong <zhangxiaolong@gotokepler.com>
+" @copyright Copyright (c) 2024-2034  开普勒人形机器人
+
 set nocompatible           
 filetype off
 "install methods:  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -97,7 +104,7 @@ autocmd InsertEnter,WinLeave * set nocursorline
 let g:header_auto_add_header = 1
 let g:header_auto_update_header = 1
 let g:header_field_author = 'zhangxiaolong'
-let g:header_field_author_email = 'lsqyRobot@gmail.com'
+let g:header_field_author_email = 'zhangxiaolong@gotokepler.com'
 let g:header_field_filename_path = 1
 let g:header_field_copyright = '@copyright Copyright (c) 2024-2034  开普勒人形机器人'
 let g:header_field_timestamp_format = '%Y-%m-%d'
