@@ -1,9 +1,9 @@
 " File              : .vimrc
-" Author            : zhangxiaolong <zhangxiaolong@gotokepler.com>
-" Date              : 2025-02-13
-" Last Modified Date: 2025-06-28
-" Last Modified By  : zhangxiaolong <zhangxiaolong@gotokepler.com>
-" @copyright Copyright (c) 2024-2034  开普勒人形机器人
+" Author            : zhangxiaolong <lsqyRobot@gmail.com>
+" Date              : 2025-06-30
+" Last Modified Date: 2025-06-30
+" Last Modified By  : zhangxiaolong <lsqyRobot@gmail.com>
+" @copyright Copyright (c) LsqyRobot
 
 set nocompatible           
 filetype off
