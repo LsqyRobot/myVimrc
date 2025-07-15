@@ -1,14 +1,5 @@
-" File              : .vimrc
-" Author            : zhangxiaolong <lsqyRobot@gmail.com>
-" Date              : 2025-06-30
-" Last Modified Date: 2025-06-30
-" Last Modified By  : zhangxiaolong <lsqyRobot@gmail.com>
-" @copyright Copyright (c) LsqyRobot
-
-set nocompatible           
+set nocompatible
 filetype off
-"install methods:  curl -fLo ~/.vim/autoload/plug.vim --create-dirs \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-" 采用更现代化的管理插件工具
 call plug#begin('~/.vim/plugged')
 Plug 'rking/ag.vim'                           " 对于vimgrep 的 搜索优化
 Plug 'frazrepo/vim-rainbow'                   " 都是彩虹屁
@@ -19,14 +10,15 @@ Plug 'flazz/vim-colorschemes'                 " 应该是和代码配色相关�
 Plug 'scrooloose/nerdtree'                    " 文件树, 用于浏览当前目录
 Plug 'tpope/vim-commentary'                   " 辅助快速注释用的
 Plug 'mzlogin/vim-markdown-toc'               " 主要是在markdown里面生成目录的
-Plug 'ervandew/supertab'                      " 比<C+n> 强一些 
+Plug 'ervandew/supertab'                      " 比<C+n> 强一些
 Plug 'vim-scripts/taglist.vim'                " 用于浏览函数的
 Plug 'tpope/vim-fugitive'                     " 主要是用于看了哪些修改下的跳转， 在使用Git的时候
 Plug 'airblade/vim-gitgutter'                 " 主要用于直接查看做了哪些修改使用
 Plug 'itchyny/vim-cursorword'                 " 显示同一个出现的同一个单词
 Plug 'vim-airline/vim-airline'                " 更美观的状态栏
-Plug 'alpertuna/vim-header'                   " 增加作者信息
+"Plug 'alpertuna/vim-header'                   " 增加作者信息
 Plug 'github/copilot.vim'                     " github 上的copilot 工具
+Plug 'rhysd/vim-clang-format'
 call plug#end()
 
 filetype plugin on
@@ -53,17 +45,7 @@ set nu
 syntax enable
 se noro
 set nomore
-
-" 与设置缩进4个空格相关, 但是我感觉好像没啥用处，每次还是以一个tab键来占位
-set tabstop=4
-set shiftwidth=4
-set ts=4        " 设置tab键为4个空格
-set softtabstop=4
-set expandtab
-set autoindent
-" 结束设置缩进4个空格
-
-set incsearch   " 可以开启增量搜索，使得在搜索时可以实时匹配输入的字符，按 :set noincsearch 可以关闭增量搜索。
+set incsearch                                " 可以开启增量搜索，使得在搜索时可以实时匹配输入的字符，按 :set noincsearch 可以关闭增量搜索。
 set ignorecase
 set smartcase
 
@@ -74,6 +56,7 @@ au BufWinEnter * silent loadview
 set tags=../*/tags,./*/tags,./tags,./../tags,./../../tags,./../../../tags,./../../../../tags,./../../../../../../tags,./../../../../../../../../../tags,
 let Tlist_Show_One_File=1      " 给taglist设置的, 不同时显示多个文件的tag，只显示当前文件的
 let Tlist_Exit_OnlyWindow=1    " 同上，如果taglist窗口是最后一个窗口，则退出vim
+" 个人疑问，有没有比ctags更好的？
 
 " 针对花里胡哨的彩虹括号
 let g:rbpt_colorpairs = [
@@ -108,3 +91,11 @@ let g:header_field_author_email = 'lsqyRobot@gmail.com'
 let g:header_field_filename_path = 1
 let g:header_field_copyright = '@copyright Copyright (c) LsqyRobot'
 let g:header_field_timestamp_format = '%Y-%m-%d'
+
+autocmd FileType cpp,cc,h,hpp ClangFormatAutoEnable
+let g:clang_format#style_options = {
+  \ "BasedOnStyle": "Google",
+  \ "IndentWidth": 4,
+  \ }
+
+autocmd FileType cpp,cc,h,hpp ClangFormatAutoEnable
