@@ -99,3 +99,8 @@ let g:clang_format#style_options = {
   \ }
 
 autocmd FileType cpp,cc,h,hpp ClangFormatAutoEnable
+
+" 设置 leader 键
+let mapleader = "," 
+" 映射 <leader>m 执行 @a 宏
+nnoremap <leader>m @a 
