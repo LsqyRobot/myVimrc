@@ -435,6 +435,102 @@ backup_existing_config() {
     fi
 }
 
+# 设置自动 ctags 配置
+setup_auto_ctags_config() {
+    print_info "配置自动 ctags 生成功能..."
+
+    local config_file="$HOME/.config/nvim/init.vim"
+
+    # 检查是否已经有 gutentags 配置
+    if grep -q "vim-gutentags" "$config_file"; then
+        print_warning "gutentags 插件已配置，跳过"
+        return
+    fi
+
+    # 添加 gutentags 插件
+    if ! grep -q "Plug 'ludovicchabant/vim-gutentags'" "$config_file"; then
+        # 在插件部分的末尾添加 gutentags
+        sed -i "/call plug#end()/i\\
+\\
+\" 自动 ctags 管理\\
+Plug 'ludovicchabant/vim-gutentags'" "$config_file"
+    fi
+
+    # 添加 gutentags 配置
+    cat >> "$config_file" << 'EOF'
+
+" ===== Gutentags 自动 ctags 配置 =====
+" 启用 gutentags
+let g:gutentags_enabled = 1
+
+" 项目根目录标识文件
+let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
+
+" tags 文件名
+let g:gutentags_ctags_tagfile = '.tags'
+
+" 同时开启 ctags 支持
+let g:gutentags_modules = ['ctags']
+
+" 配置 ctags 的参数
+let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q']
+let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
+let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
+let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
+
+" 禁用 gutentags 自动生成 gtags 数据库的功能
+let g:gutentags_auto_add_gtags_cscope = 0
+
+" 在状态栏中显示 tags 生成状态
+let g:gutentags_generate_on_missing = 1
+let g:gutentags_generate_on_write = 1
+let g:gutentags_generate_on_new = 1
+
+" 缓存目录，避免污染项目目录
+let g:gutentags_cache_dir = expand('~/.cache/tags')
+
+" 跳转快捷键
+nnoremap <C-]> g<C-]>
+nnoremap g<C-]> <C-]>
+nnoremap <C-t> :pop<CR>
+EOF
+
+    print_success "自动 ctags 配置已添加"
+}
+
+# 修复编码和乱码问题
+fix_encoding_issues() {
+    print_info "修复编码和乱码问题..."
+
+    local config_file="$HOME/.config/nvim/init.vim"
+
+    # 在配置文件开头添加编码设置
+    if ! grep -q "set encoding=utf-8" "$config_file"; then
+        # 在文件开头添加编码配置
+        local temp_file=$(mktemp)
+        cat > "$temp_file" << 'EOF'
+" ===== 编码设置 (修复乱码) =====
+set encoding=utf-8
+set fileencoding=utf-8
+set fileencodings=utf-8,gbk,gb2312,big5
+set termencoding=utf-8
+scriptencoding utf-8
+
+EOF
+        cat "$config_file" >> "$temp_file"
+        mv "$temp_file" "$config_file"
+        print_success "已添加编码配置"
+    fi
+
+    # 修复状态栏显示问题
+    if grep -q "lualine.setup" "$config_file"; then
+        # 替换可能导致乱码的特殊字符
+        sed -i "s/component_separators = '|'/component_separators = { left = '|', right = '|' }/g" "$config_file"
+        sed -i "s/section_separators = ''/section_separators = { left = '', right = '' }/g" "$config_file"
+        print_success "已修复状态栏显示问题"
+    fi
+}
+
 # 复制配置文件
 setup_config_files() {
     print_info "设置编辑器配置文件..."
@@ -450,6 +546,16 @@ setup_config_files() {
         # 创建 undo 目录
         mkdir -p ~/.config/nvim/undo
         print_info "已创建 undo 目录"
+
+        # 创建 tags 缓存目录
+        mkdir -p ~/.cache/tags
+        print_info "已创建 tags 缓存目录"
+
+        # 修复编码和乱码问题
+        fix_encoding_issues
+
+        # 自动添加 gutentags 插件配置到 init.vim
+        setup_auto_ctags_config
 
         # 为了兼容，也创建 vim 的软链接
         ln -sf "$HOME/.config/nvim/init.vim" "$HOME/.vimrc" 2>/dev/null || true
