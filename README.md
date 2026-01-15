@@ -1,151 +1,233 @@
-# myVimrc
+# Lucas 的现代化 Vim/Neovim 配置
 
-这个工具会随着你的使用，而愈加的熟悉，会愈加的上瘾，其中的技能会随着对之不断的了解而提升，这个工具从2018年开始使用，在日常的工作中，可以感受到其高效，而省去不少的时间学习其他的技能,开箱即用的，省去了折腾，可是不为无益之事，何以遣有涯之生？
+> 这个工具会随着你的使用，而愈加的熟悉，会愈加的上瘾，其中的技能会随着对之不断的了解而提升。从 2018 年开始使用，在日常工作中可以感受到其高效，省去了不少时间学习其他技能。开箱即用的配置，省去了折腾，"可是不为无益之事，何以遣有涯之生？"
+
+## 🎯 双模式配置选择
+
+本配置系统提供两种模式，满足不同用户的需求：
+
+| 模式 | 适合人群 | 特点 | 主要技术 |
+|------|----------|------|----------|
+| **传统 Vim** | 追求稳定、新手友好 | 兼容性强，配置简单 | ctags + 传统插件 |
+| **极致现代型 Neovim** | 追求最新功能 | IDE 级体验，功能强大 | LSP + Treesitter + Lua |
 
 ## 🚀 一键安装
 
-使用提供的自动安装脚本，无需手动配置：
-
 ```bash
-# 克隆仓库
-git clone [your-repo-url] ~/myVimrc
-cd ~/myVimrc
-
-# 运行一键安装脚本
+cd /home/lucas/myVimrc
 ./build.sh
 ```
 
-### 安装脚本功能
+安装过程中会提示选择配置类型：
+- **选项 1**: 传统稳定 Vim 配置
+- **选项 2**: 极致现代型 Neovim 配置 ⭐ **推荐**
 
-- ✅ **自动检测系统** - 支持Ubuntu/Debian、Fedora/CentOS、Arch Linux
-- ✅ **安装所有依赖** - vim, git, python3, ctags, ag, clang-format
-- ✅ **备份现有配置** - 自动备份你的旧vim配置
-- ✅ **安装插件管理器** - 自动安装vim-plug
-- ✅ **配置个人信息** - 交互式设置作者信息
-- ✅ **安装所有插件** - 自动下载并安装16个vim插件
-- ✅ **生成ctags** - 为代码导航生成标签
-- ✅ **验证安装** - 检查所有组件是否正确安装
+## 🔥 极致现代型 Neovim 特性
 
-### 手动安装步骤
+### 🧠 LSP 智能代码支持
+- **实时错误检查**: 代码问题即时发现
+- **智能补全**: 类型感知的代码补全
+- **跨文件重构**: 安全重命名变量
+- **悬浮文档**: 函数说明即时显示
+- **调用层级**: 完整的代码导航
 
-如果你喜欢手动安装，可以按以下步骤：
+### 🔍 Telescope 模糊搜索
+- **文件搜索**: `Space + ff`
+- **内容搜索**: `Space + fg`
+- **符号搜索**: `Space + fs`
+- **引用搜索**: `Space + fr`
 
-1. **安装系统依赖**
-   ```bash
-   # Ubuntu/Debian
-   sudo apt install vim git python3 python3-pip exuberant-ctags silversearcher-ag clang-format
+### 🎨 现代 UI 界面
+- **Tokyo Night 主题**: 护眼暗色主题
+- **Web 图标**: 精美的文件类型图标
+- **现代状态栏**: 信息丰富的 Lualine
+- **浮动终端**: `Ctrl + \` 随时调用
 
-   # Fedora/CentOS
-   sudo dnf install vim git python3 python3-pip ctags the_silver_searcher clang-tools-extra
+### 🚀 支持语言 (LSP)
+- **C/C++**: clangd
+- **Python**: pyright
+- **Go**: gopls
+- **Rust**: rust-analyzer
+- **JavaScript/TypeScript**: tsserver
+- **Lua**: lua_ls
 
-   # Arch Linux
-   sudo pacman -S vim git python python-pip ctags the_silver_searcher clang
-   ```
+## 📦 安装脚本功能
 
-2. **安装vim-plug插件管理器**
-   ```bash
-   curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-   ```
+### 🔧 智能系统检测
+- ✅ **多发行版支持**: Ubuntu/Debian、Fedora/CentOS、Arch Linux
+- ✅ **版本检测**: 自动检测并安装合适版本的 Neovim
+- ✅ **依赖管理**: 自动安装所有必需依赖
 
-3. **复制配置文件**
-   ```bash
-   cp .vimrc ~/.vimrc
-   cp .clang-format ~/.clang-format
-   ```
+### 🛡️ 安全备份
+- ✅ **配置备份**: 自动备份现有配置文件
+- ✅ **时间戳**: 带时间戳的备份目录
+- ✅ **回滚支持**: 出问题可快速恢复
 
-4. **安装插件**
-   ```bash
-   vim +PlugInstall +qall
-   ```
+### ⚙️ 自动化配置
+- ✅ **插件管理**: 自动安装 vim-plug
+- ✅ **LSP 服务器**: Mason 自动安装语言服务器
+- ✅ **Treesitter**: 自动安装语法解析器
+- ✅ **个人信息**: 可选的作者信息配置
 
-## 📦 包含的插件
+## 💻 快捷键对比
 
-| 插件 | 功能 | 快捷键 |
-|------|------|---------|
-| NERDTree | 文件树浏览器 | `Ctrl+n` |
-| vim-commentary | 快速注释 | `gcc`, `gc` |
-| vim-fugitive | Git集成 | `:Gstatus` |
-| vim-gitgutter | Git修改显示 | 自动显示 |
-| ag.vim | 快速搜索 | `:Ag 关键字` |
-| jedi-vim | Python补全 | 自动补全 |
-| supertab | 增强Tab补全 | `Tab` |
-| taglist.vim | 函数标签浏览 | `:Tlist` |
-| vim-airline | 美观状态栏 | 自动显示 |
-| copilot.vim | AI代码助手 | `:Copilot setup` |
-| vim-clang-format | C++代码格式化 | 保存时自动 |
-| molokai | 配色主题 | 默认启用 |
+### 传统 Vim 模式 (Leader: `,`)
+| 功能 | 快捷键 | 说明 |
+|------|--------|------|
+| 文件树 | `Ctrl + n` | NERDTree |
+| 搜索文件 | `,ff` | LeaderF |
+| 更新 ctags | `,ct` | 手动更新标签 |
+| 标签浏览 | `,v` | Vista |
 
-## ⚡ 快速使用
+### 极致现代型 Neovim (Leader: `Space`)
+| 功能 | 快捷键 | 说明 |
+|------|--------|------|
+| 文件树 | `Ctrl + n` | NvimTree |
+| 搜索文件 | `Space + ff` | Telescope |
+| 全局搜索 | `Space + fg` | 内容搜索 |
+| 跳转定义 | `gd` | LSP 智能跳转 |
+| 智能重命名 | `Space + rn` | LSP 重构 |
+| 代码操作 | `Space + ca` | Quick Fix |
+| 浮动终端 | `Ctrl + \` | ToggleTerm |
 
-### 基本操作
-- **文件树**: `Ctrl+n` 打开/关闭NERDTree
-- **快速搜索**: `:Ag 搜索内容` 在所有文件中搜索
-- **注释代码**: `gcc` 注释单行，`gc` 注释选中区域
-- **Git状态**: `:Gstatus` 查看git状态
+## 🔧 详细配置文档
 
-### Python开发
-- **自动补全**: 输入后按`Tab`或`Ctrl+n`
-- **跳转定义**: `Ctrl+]` (需要ctags)
-- **函数列表**: `:Tlist` 显示当前文件函数列表
+### 📚 完整指南
+- **[NEOVIM_GUIDE.md](NEOVIM_GUIDE.md)**: 极致现代型完整使用指南 (7KB+)
+  - 详细快捷键表
+  - 插件配置说明
+  - 故障排除指南
+  - 最佳实践建议
 
-### C++开发
-- **代码格式化**: 保存时自动按Google风格格式化
-- **手动格式化**: `:ClangFormat`
-- **包含头文件**: 自动补全和语法检查
-
-### Git集成
-- **查看修改**: 左侧会显示git diff标记
-- **Git命令**: `:Git add .`, `:Git commit` 等
-- **跳转修改**: `]c` 下一个修改，`[c` 上一个修改
-
-## 🔧 配置说明
-
-### 个人信息设置
-编辑 `~/.vimrc` 中的作者信息：
-```vim
-let g:header_field_author = '你的名字'
-let g:header_field_author_email = '你的邮箱'
-let g:header_field_copyright = '@copyright Copyright (c) 你的版权'
+### 📁 配置文件结构
+```
+myVimrc/
+├── init.vim           # Neovim 配置 (15KB+)
+├── .vimrc             # 传统 Vim 配置 (8KB+)
+├── build.sh           # 智能安装脚本 (19KB+)
+├── .clang-format      # C++ 格式化配置
+├── NEOVIM_GUIDE.md    # 详细使用指南
+└── README.md          # 项目说明 (当前文件)
 ```
 
-### C++代码风格
-编辑 `~/.clang-format` 自定义代码格式，当前使用Google风格，4空格缩进。
+## 🆚 功能对比表
 
-### GitHub Copilot设置
-如果你有Copilot订阅：
-```vim
-:Copilot setup
-```
+| 特性 | 传统 Vim | 极致现代型 Neovim |
+|------|----------|-------------------|
+| **启动速度** | ⚡ 极快 | 🚀 快速 |
+| **内存占用** | 🪶 轻量 | 📊 适中 |
+| **学习成本** | 📚 简单 | 🎓 中等 |
+| **功能丰富度** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **代码补全** | 基础补全 | 智能补全 + AI |
+| **错误检查** | 语法高亮 | 实时诊断 |
+| **重构支持** | 手动 | 自动化 |
+| **调试功能** | 无 | 内置调试器 |
+| **适用场景** | 服务器编辑 | 日常开发 |
 
-## 🛠 故障排除
+## 🎯 推荐使用场景
 
-### 插件安装失败
+### 选择传统 Vim 如果你：
+- 👨‍💻 主要在服务器上工作
+- ⚡ 需要极快的启动速度
+- 🔒 追求配置稳定性
+- 📱 在低配置机器上工作
+
+### 选择极致现代型 Neovim 如果你：
+- 💻 本地开发为主
+- 🚀 想要 IDE 级别的功能
+- 🎨 喜欢现代化界面
+- 🔧 愿意探索新功能
+
+## 🛠️ 故障排除
+
+### Neovim 相关问题
 ```bash
+# 检查 Neovim 版本
+nvim --version
+
+# 健康检查
+nvim +checkhealth
+
+# 重新安装插件
+nvim +PlugInstall +qall
+
+# LSP 服务器管理
+nvim +Mason
+```
+
+### 传统 Vim 问题
+```bash
+# 重新安装插件
 vim +PlugClean +PlugInstall +qall
-```
 
-### Python补全不工作
-```bash
+# 更新 ctags
+ctags -R .
+
+# Python 补全问题
 pip3 install jedi
 ```
 
-### ag搜索命令不存在
-```bash
-# Ubuntu/Debian
-sudo apt install silversearcher-ag
+## 🔄 升级和维护
 
-# 或使用grep替代
-:grep -r "搜索内容" .
+### 配置更新
+```bash
+cd /home/lucas/myVimrc
+git pull origin main
+./build.sh  # 重新运行安装脚本
 ```
 
-### ctags不生成
-在项目根目录运行：
+### 插件更新
 ```bash
-ctags -R .
+# Neovim
+nvim +PlugUpdate +qall
+nvim +Mason  # 更新 LSP 服务器
+
+# 传统 Vim
+vim +PlugUpdate +qall
 ```
+
+## 📈 性能建议
+
+### Neovim 优化
+- 使用 `lazy.nvim` 插件管理器 (高级用户)
+- 配置项目特定的 LSP 设置
+- 定期清理无用的 Treesitter 解析器
+
+### 通用优化
+- 定期更新插件
+- 清理无用的配置
+- 使用 SSD 存储配置文件
+
+## 🤝 贡献指南
+
+欢迎提交 Issue 和 Pull Request！
+
+### 参与方式
+1. 🐛 **Bug 报告**: 详细描述问题和复现步骤
+2. 💡 **功能建议**: 提出新功能想法
+3. 📚 **文档改进**: 完善文档和示例
+4. 🔧 **代码贡献**: 修复 Bug 或添加功能
 
 ## 📝 更新记录
 
-- **20250715** 增加谷歌编程风格插件及配置文件 `.clang-format`
-- **20260113** 添加一键安装脚本 `build.sh` 和完整文档
+- **2025-01-15** 🚀 **重大更新**: 添加极致现代型 Neovim 配置
+  - LSP 智能补全支持
+  - Telescope 模糊搜索
+  - Treesitter 语法高亮
+  - 现代化 UI 界面
+  - 双模式选择支持
+
+- **2024-01-13** 📦 添加一键安装脚本和完整文档
+- **2024-07-15** 🎨 增加 Google 编程风格和 `.clang-format` 配置
+
+## ⭐ 特别鸣谢
+
+感谢开源社区的贡献者们，特别是：
+- Neovim 核心团队
+- LSP 协议维护者
+- 各插件作者
+- Vim 社区
+
+---
+
+💡 **提示**: 建议新用户选择极致现代型 Neovim 配置，体验现代化的开发环境！
