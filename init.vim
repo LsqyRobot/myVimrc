@@ -67,8 +67,6 @@ Plug 'rafamadriz/friendly-snippets'            " 片段库
 
 " === 语法高亮和解析 ===
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-Plug 'nvim-treesitter/nvim-treesitter-textobjects'
-Plug 'nvim-treesitter/nvim-treesitter-context'
 
 " === 模糊搜索 ===
 Plug 'nvim-lua/plenary.nvim'                   " 依赖库
@@ -107,19 +105,8 @@ Plug 'j-hui/fidget.nvim'                       " LSP 进度显示
 Plug 'akinsho/toggleterm.nvim'                 " 终端管理
 Plug 'stevearc/overseer.nvim'                  " 任务管理器
 
-" === 调试 ===
-Plug 'mfussenegger/nvim-dap'                   " 调试协议
-Plug 'rcarriga/nvim-dap-ui'                    " 调试 UI
-Plug 'theHamsta/nvim-dap-virtual-text'         " 调试变量显示
-
-" === 工作区和会话 ===
-Plug 'folke/persistence.nvim'                  " 会话管理
-Plug 'ahmedkhalf/project.nvim'                 " 项目管理
-
 " === 特殊功能 ===
-Plug 'github/copilot.vim'                      " GitHub Copilot
-Plug 'folke/zen-mode.nvim'                     " 专注模式
-Plug 'iamcco/markdown-preview.nvim', {'do': 'cd app && npx --yes yarn install'}
+Plug 'github/copilot.vim'                      " GitHub Copilot (可选)
 
 call plug#end()
 
@@ -155,31 +142,40 @@ lua << EOF
 -- =====================================================
 
 -- ===== Mason (LSP 服务器管理) =====
-require("mason").setup({
-    ui = {
-        icons = {
-            package_installed = "✓",
-            package_pending = "➜",
-            package_uninstalled = "✗"
+-- 安全加载 mason 插件
+local mason_ok, mason = pcall(require, "mason")
+if not mason_ok then
+    vim.notify("Mason plugin not found. Please install plugins first.", vim.log.levels.WARN)
+else
+    mason.setup({
+        ui = {
+            icons = {
+                package_installed = "✓",
+                package_pending = "➜",
+                package_uninstalled = "✗"
+            }
         }
-    }
-})
+    })
+end
 
-require("mason-lspconfig").setup({
-    ensure_installed = {
-        "clangd",        -- C/C++
-        "pyright",       -- Python
-        "gopls",         -- Go
-        "rust_analyzer", -- Rust
-        "tsserver",      -- TypeScript/JavaScript
-        "lua_ls",        -- Lua
-    },
-    automatic_installation = true,
-})
+local mason_lspconfig_ok, mason_lspconfig = pcall(require, "mason-lspconfig")
+if mason_lspconfig_ok then
+    mason_lspconfig.setup({
+        ensure_installed = {
+            "clangd",        -- C/C++
+            "pyright",       -- Python
+        },
+        automatic_installation = true,
+    })
+end
 
 -- ===== LSP 配置 =====
-local lspconfig = require('lspconfig')
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
+-- 安全加载 cmp_nvim_lsp
+local cmp_nvim_lsp_ok, cmp_nvim_lsp = pcall(require, 'cmp_nvim_lsp')
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+if cmp_nvim_lsp_ok then
+    capabilities = cmp_nvim_lsp.default_capabilities()
+end
 
 -- LSP 快捷键设置
 local on_attach = function(client, bufnr)
@@ -204,276 +200,308 @@ local on_attach = function(client, bufnr)
     vim.keymap.set('n', ']d', vim.diagnostic.goto_next, bufopts)
 end
 
--- 配置各种 LSP 服务器
-local servers = { 'clangd', 'pyright', 'gopls', 'rust_analyzer', 'tsserver', 'lua_ls' }
-
-for _, lsp in pairs(servers) do
-    lspconfig[lsp].setup {
-        on_attach = on_attach,
-        capabilities = capabilities,
-    }
-end
-
--- ===== 补全配置 (nvim-cmp) =====
-local cmp = require('cmp')
-local luasnip = require('luasnip')
-
-cmp.setup({
-    snippet = {
-        expand = function(args)
-            luasnip.lsp_expand(args.body)
-        end,
-    },
-    window = {
-        completion = cmp.config.window.bordered(),
-        documentation = cmp.config.window.bordered(),
-    },
-    mapping = cmp.mapping.preset.insert({
-        ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-        ['<C-f>'] = cmp.mapping.scroll_docs(4),
-        ['<C-Space>'] = cmp.mapping.complete(),
-        ['<C-e>'] = cmp.mapping.abort(),
-        ['<CR>'] = cmp.mapping.confirm({ select = true }),
-        ['<Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_next_item()
-            elseif luasnip.expand_or_jumpable() then
-                luasnip.expand_or_jump()
-            else
-                fallback()
-            end
-        end, { 'i', 's' }),
-        ['<S-Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_prev_item()
-            elseif luasnip.jumpable(-1) then
-                luasnip.jump(-1)
-            else
-                fallback()
-            end
-        end, { 'i', 's' }),
-    }),
-    sources = cmp.config.sources({
-        { name = 'nvim_lsp' },
-        { name = 'luasnip' },
-        { name = 'path' },
-    }, {
-        { name = 'buffer' },
-    })
-})
-
--- 命令行补全
-cmp.setup.cmdline({ '/', '?' }, {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = {
-        { name = 'buffer' }
-    }
-})
-
-cmp.setup.cmdline(':', {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = cmp.config.sources({
-        { name = 'path' }
-    }, {
-        { name = 'cmdline' }
-    })
-})
-
--- ===== Treesitter 配置 =====
-require('nvim-treesitter.configs').setup {
-    ensure_installed = {
-        "c", "cpp", "python", "go", "rust", "lua", "vim", "vimdoc",
-        "javascript", "typescript", "html", "css", "json", "yaml"
-    },
-    sync_install = false,
-    auto_install = true,
-    highlight = {
-        enable = true,
-        additional_vim_regex_highlighting = false,
-    },
-    indent = { enable = true },
-    textobjects = {
-        select = {
-            enable = true,
-            lookahead = true,
-            keymaps = {
-                ["af"] = "@function.outer",
-                ["if"] = "@function.inner",
-                ["ac"] = "@class.outer",
-                ["ic"] = "@class.inner",
-            },
-        },
-    },
+-- 配置 LSP 服务器 (使用新的 vim.lsp.config API)
+-- C/C++ 语言服务器
+vim.lsp.config.clangd = {
+    cmd = { 'clangd' },
+    filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda', 'proto' },
+    on_attach = on_attach,
+    capabilities = capabilities,
 }
 
--- ===== Telescope 配置 =====
-require('telescope').setup({
-    defaults = {
-        prompt_prefix = "🔍 ",
-        selection_caret = "➤ ",
-        path_display = { "truncate" },
-        file_ignore_patterns = {
-            "node_modules", ".git/", "*.pyc", "__pycache__",
+-- Python 语言服务器
+vim.lsp.config.pyright = {
+    cmd = { 'pyright-langserver', '--stdio' },
+    filetypes = { 'python' },
+    on_attach = on_attach,
+    capabilities = capabilities,
+}
+
+-- ===== 补全配置 (nvim-cmp) =====
+local cmp_ok, cmp = pcall(require, 'cmp')
+local luasnip_ok, luasnip = pcall(require, 'luasnip')
+
+if cmp_ok and luasnip_ok then
+    cmp.setup({
+        snippet = {
+            expand = function(args)
+                luasnip.lsp_expand(args.body)
+            end,
         },
-    },
-    extensions = {
-        fzf = {
-            fuzzy = true,
-            override_generic_sorter = true,
-            override_file_sorter = true,
-            case_mode = "smart_case",
+        window = {
+            completion = cmp.config.window.bordered(),
+            documentation = cmp.config.window.bordered(),
+        },
+        mapping = cmp.mapping.preset.insert({
+            ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+            ['<C-f>'] = cmp.mapping.scroll_docs(4),
+            ['<C-Space>'] = cmp.mapping.complete(),
+            ['<C-e>'] = cmp.mapping.abort(),
+            ['<CR>'] = cmp.mapping.confirm({ select = true }),
+            ['<Tab>'] = cmp.mapping(function(fallback)
+                if cmp.visible() then
+                    cmp.select_next_item()
+                elseif luasnip.expand_or_jumpable() then
+                    luasnip.expand_or_jump()
+                else
+                    fallback()
+                end
+            end, { 'i', 's' }),
+            ['<S-Tab>'] = cmp.mapping(function(fallback)
+                if cmp.visible() then
+                    cmp.select_prev_item()
+                elseif luasnip.jumpable(-1) then
+                    luasnip.jump(-1)
+                else
+                    fallback()
+                end
+            end, { 'i', 's' }),
+        }),
+        sources = cmp.config.sources({
+            { name = 'nvim_lsp' },
+            { name = 'luasnip' },
+            { name = 'path' },
+        }, {
+            { name = 'buffer' },
+        })
+    })
+
+    -- 命令行补全
+    cmp.setup.cmdline({ '/', '?' }, {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = {
+            { name = 'buffer' }
         }
+    })
+
+    cmp.setup.cmdline(':', {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = cmp.config.sources({
+            { name = 'path' }
+        }, {
+            { name = 'cmdline' }
+        })
+    })
+else
+    vim.notify("nvim-cmp or luasnip not found. Completion features disabled.", vim.log.levels.WARN)
+end
+
+-- ===== Treesitter 配置 =====
+local treesitter_ok, treesitter_configs = pcall(require, 'nvim-treesitter.configs')
+if treesitter_ok then
+    treesitter_configs.setup {
+        ensure_installed = {
+            "c", "cpp", "python", "vim", "vimdoc", "lua", "json"
+        },
+        sync_install = false,
+        auto_install = true,
+        highlight = {
+            enable = true,
+            additional_vim_regex_highlighting = false,
+        },
+        indent = { enable = true },
     }
-})
+else
+    vim.notify("nvim-treesitter not found. Syntax highlighting may be limited.", vim.log.levels.WARN)
+end
 
-require('telescope').load_extension('fzf')
+-- ===== Telescope 配置 =====
+local telescope_ok, telescope = pcall(require, 'telescope')
+local telescope_builtin_ok, telescope_builtin = pcall(require, 'telescope.builtin')
 
--- Telescope 快捷键
-vim.keymap.set('n', '<leader>ff', require('telescope.builtin').find_files, {})
-vim.keymap.set('n', '<leader>fg', require('telescope.builtin').live_grep, {})
-vim.keymap.set('n', '<leader>fb', require('telescope.builtin').buffers, {})
-vim.keymap.set('n', '<leader>fh', require('telescope.builtin').help_tags, {})
-vim.keymap.set('n', '<leader>fr', require('telescope.builtin').lsp_references, {})
-vim.keymap.set('n', '<leader>fs', require('telescope.builtin').lsp_document_symbols, {})
+if telescope_ok then
+    telescope.setup({
+        defaults = {
+            prompt_prefix = "🔍 ",
+            selection_caret = "➤ ",
+            path_display = { "truncate" },
+            file_ignore_patterns = {
+                "node_modules", ".git/", "*.pyc", "__pycache__",
+            },
+        },
+        extensions = {
+            fzf = {
+                fuzzy = true,
+                override_generic_sorter = true,
+                override_file_sorter = true,
+                case_mode = "smart_case",
+            }
+        }
+    })
+
+    -- 尝试加载 fzf 扩展
+    pcall(telescope.load_extension, 'fzf')
+
+    -- Telescope 快捷键
+    if telescope_builtin_ok then
+        vim.keymap.set('n', '<leader>ff', telescope_builtin.find_files, {})
+        vim.keymap.set('n', '<leader>fg', telescope_builtin.live_grep, {})
+        vim.keymap.set('n', '<leader>fb', telescope_builtin.buffers, {})
+        vim.keymap.set('n', '<leader>fh', telescope_builtin.help_tags, {})
+        vim.keymap.set('n', '<leader>fr', telescope_builtin.lsp_references, {})
+        vim.keymap.set('n', '<leader>fs', telescope_builtin.lsp_document_symbols, {})
+    end
+else
+    vim.notify("Telescope not found. Search features disabled.", vim.log.levels.WARN)
+end
 
 -- ===== 文件树配置 =====
-require("nvim-tree").setup({
-    disable_netrw = true,
-    hijack_netrw = true,
-    update_focused_file = {
-        enable = true,
-    },
-    filters = {
-        dotfiles = false,
-    },
-    git = {
-        enable = true,
-        ignore = false,
-    },
-    renderer = {
-        icons = {
-            glyphs = {
-                default = "",
-                symlink = "",
-                folder = {
-                    arrow_closed = "",
-                    arrow_open = "",
+local nvim_tree_ok, nvim_tree = pcall(require, "nvim-tree")
+if nvim_tree_ok then
+    nvim_tree.setup({
+        disable_netrw = true,
+        hijack_netrw = true,
+        update_focused_file = {
+            enable = true,
+        },
+        filters = {
+            dotfiles = false,
+        },
+        git = {
+            enable = true,
+            ignore = false,
+        },
+        renderer = {
+            icons = {
+                glyphs = {
                     default = "",
-                    open = "",
-                    empty = "",
-                    empty_open = "",
                     symlink = "",
-                    symlink_open = "",
+                    folder = {
+                        arrow_closed = "",
+                        arrow_open = "",
+                        default = "",
+                        open = "",
+                        empty = "",
+                        empty_open = "",
+                        symlink = "",
+                        symlink_open = "",
+                    },
                 },
             },
         },
-    },
-})
+    })
 
-vim.keymap.set('n', '<C-n>', ':NvimTreeToggle<CR>', { silent = true })
+    vim.keymap.set('n', '<C-n>', ':NvimTreeToggle<CR>', { silent = true })
+else
+    vim.notify("nvim-tree not found. File explorer disabled.", vim.log.levels.WARN)
+end
 
--- ===== Git Signs =====
-require('gitsigns').setup {
-    signs = {
-        add          = { text = '│' },
-        change       = { text = '│' },
-        delete       = { text = '_' },
-        topdelete    = { text = '‾' },
-        changedelete = { text = '~' },
-        untracked    = { text = '┆' },
-    },
-}
-
--- ===== 状态栏配置 =====
-require('lualine').setup {
-    options = {
-        icons_enabled = true,
-        theme = 'auto',
-        component_separators = { left = '', right = ''},
-        section_separators = { left = '', right = ''},
-    },
-    sections = {
-        lualine_a = {'mode'},
-        lualine_b = {'branch', 'diff', 'diagnostics'},
-        lualine_c = {'filename'},
-        lualine_x = {'encoding', 'fileformat', 'filetype'},
-        lualine_y = {'progress'},
-        lualine_z = {'location'}
-    },
-}
-
--- ===== 缓冲区标签页 =====
-require("bufferline").setup{
-    options = {
-        numbers = "none",
-        diagnostics = "nvim_lsp",
-        separator_style = "slant",
-        show_buffer_close_icons = false,
-        show_close_icon = false,
+-- ===== 其他插件安全加载 =====
+-- Git Signs
+pcall(function()
+    require('gitsigns').setup {
+        signs = {
+            add          = { text = '│' },
+            change       = { text = '│' },
+            delete       = { text = '_' },
+            topdelete    = { text = '‾' },
+            changedelete = { text = '~' },
+            untracked    = { text = '┆' },
+        },
     }
-}
+end)
 
--- ===== 自动配对 =====
-require('nvim-autopairs').setup({
-    check_ts = true,
-    ts_config = {
-        lua = {'string'},
-        javascript = {'template_string'},
+-- 状态栏配置
+pcall(function()
+    require('lualine').setup {
+        options = {
+            icons_enabled = true,
+            theme = 'auto',
+            component_separators = { left = '', right = ''},
+            section_separators = { left = '', right = ''},
+        },
+        sections = {
+            lualine_a = {'mode'},
+            lualine_b = {'branch', 'diff', 'diagnostics'},
+            lualine_c = {'filename'},
+            lualine_x = {'encoding', 'fileformat', 'filetype'},
+            lualine_y = {'progress'},
+            lualine_z = {'location'}
+        },
     }
-})
+end)
 
--- ===== 注释插件 =====
-require('Comment').setup()
-
--- ===== 快捷键提示 =====
-require("which-key").setup {
-    popup_mappings = {
-        scroll_down = '<c-d>',
-        scroll_up = '<c-u>',
-    },
-}
-
--- ===== 终端管理 =====
-require("toggleterm").setup{
-    size = 20,
-    open_mapping = [[<c-\>]],
-    hide_numbers = true,
-    shade_terminals = true,
-    start_in_insert = true,
-    direction = 'float',
-    close_on_exit = true,
-    shell = vim.o.shell,
-    float_opts = {
-        border = 'curved',
+-- 缓冲区标签页
+pcall(function()
+    require("bufferline").setup{
+        options = {
+            numbers = "none",
+            diagnostics = "nvim_lsp",
+            separator_style = "slant",
+            show_buffer_close_icons = false,
+            show_close_icon = false,
+        }
     }
-}
+end)
 
--- ===== 诊断面板 =====
-require("trouble").setup {
-    icons = false,
-    fold_open = "v",
-    fold_closed = ">",
-    indent_lines = false,
-    signs = {
-        error = "error",
-        warning = "warn",
-        information = "info",
-        hint = "hint"
-    },
-    use_diagnostic_signs = false
-}
+-- 自动配对
+pcall(function()
+    require('nvim-autopairs').setup({
+        check_ts = true,
+        ts_config = {
+            lua = {'string'},
+            javascript = {'template_string'},
+        }
+    })
+end)
 
-vim.keymap.set("n", "<leader>xx", function() require("trouble").toggle() end)
-vim.keymap.set("n", "<leader>xw", function() require("trouble").toggle("workspace_diagnostics") end)
+-- 注释插件
+pcall(function() require('Comment').setup() end)
 
--- ===== Flash (快速跳转) =====
-require("flash").setup()
-vim.keymap.set({ "n", "x", "o" }, "s", function() require("flash").jump() end)
+-- 快捷键提示
+pcall(function()
+    require("which-key").setup {
+        popup_mappings = {
+            scroll_down = '<c-d>',
+            scroll_up = '<c-u>',
+        },
+    }
+end)
 
--- ===== 会话管理 =====
-require("persistence").setup()
-vim.keymap.set("n", "<leader>qs", function() require("persistence").load() end)
-vim.keymap.set("n", "<leader>ql", function() require("persistence").load({ last = true }) end)
+-- 终端管理
+pcall(function()
+    require("toggleterm").setup{
+        size = 20,
+        open_mapping = [[<c-\>]],
+        hide_numbers = true,
+        shade_terminals = true,
+        start_in_insert = true,
+        direction = 'float',
+        close_on_exit = true,
+        shell = vim.o.shell,
+        float_opts = {
+            border = 'curved',
+        }
+    }
+end)
+
+-- 诊断面板
+local trouble_ok = pcall(function()
+    require("trouble").setup {
+        icons = false,
+        fold_open = "v",
+        fold_closed = ">",
+        indent_lines = false,
+        signs = {
+            error = "error",
+            warning = "warn",
+            information = "info",
+            hint = "hint"
+        },
+        use_diagnostic_signs = false
+    }
+end)
+
+if trouble_ok then
+    vim.keymap.set("n", "<leader>xx", function() require("trouble").toggle() end)
+    vim.keymap.set("n", "<leader>xw", function() require("trouble").toggle("workspace_diagnostics") end)
+end
+
+-- Flash (快速跳转)
+local flash_ok = pcall(function() require("flash").setup() end)
+if flash_ok then
+    vim.keymap.set({ "n", "x", "o" }, "s", function() require("flash").jump() end)
+end
 
 EOF
 

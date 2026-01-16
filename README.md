@@ -90,14 +90,29 @@ cd /home/lucas/myVimrc
 | 代码操作 | `Space + ca` | Quick Fix |
 | 浮动终端 | `Ctrl + \` | ToggleTerm |
 
-## 🔧 详细配置文档
+## 📚 详细文档
 
-### 📚 完整指南
-- **[NEOVIM_GUIDE.md](NEOVIM_GUIDE.md)**: 极致现代型完整使用指南 (7KB+)
+所有详细文档都放在 `docs/` 目录中：
+
+📋 **[docs/README.md](docs/README.md)** - 文档导航页 (查看所有文档说明)
+
+### 完整指南
+- **[docs/SIMPLE_INSTALL_GUIDE.md](docs/SIMPLE_INSTALL_GUIDE.md)**: 📋 **简化安装指南** ⭐ **推荐新手**
+  - C/C++/Python 专用配置
+  - 修复弃用警告
+  - 快速上手指南
+  - 常见问题解决
+
+- **[docs/NEOVIM_GUIDE.md](docs/NEOVIM_GUIDE.md)**: 📖 **完整使用指南** (7KB+)
   - 详细快捷键表
   - 插件配置说明
   - 故障排除指南
   - 最佳实践建议
+
+- **[docs/UPGRADE_GUIDE.md](docs/UPGRADE_GUIDE.md)**: 🔄 **升级指南**
+  - 版本升级说明
+  - 配置迁移步骤
+  - 兼容性说明
 
 ### 📁 配置文件结构
 ```
@@ -106,8 +121,12 @@ myVimrc/
 ├── .vimrc             # 传统 Vim 配置 (8KB+)
 ├── build.sh           # 智能安装脚本 (19KB+)
 ├── .clang-format      # C++ 格式化配置
-├── NEOVIM_GUIDE.md    # 详细使用指南
-└── README.md          # 项目说明 (当前文件)
+├── README.md          # 项目说明 (当前文件)
+└── docs/              # 📚 文档目录
+    ├── README.md                # 文档导航页
+    ├── SIMPLE_INSTALL_GUIDE.md  # 简化安装指南 ⭐
+    ├── NEOVIM_GUIDE.md          # 详细使用指南
+    └── UPGRADE_GUIDE.md         # 升级指南
 ```
 
 ## 🆚 功能对比表
@@ -209,6 +228,13 @@ vim +PlugUpdate +qall
 4. 🔧 **代码贡献**: 修复 Bug 或添加功能
 
 ## 📝 更新记录
+
+- **2025-01-16** 🛠️ **修复更新**: 解决插件安装问题
+  - 修复 `lspconfig` 弃用警告
+  - 解决 "module 'mason' not found" 错误
+  - 添加安全检查机制，避免配置崩溃
+  - 优化安装流程，使用临时配置确保稳定性
+  - 简化配置，专注 C/C++/Python 三种语言
 
 - **2025-01-15** 🚀 **重大更新**: 添加极致现代型 Neovim 配置
   - LSP 智能补全支持

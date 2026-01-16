@@ -610,22 +610,98 @@ configure_personal_info() {
     print_success "个人信息配置完成"
 }
 
+# 创建临时插件配置
+create_temp_plugin_config() {
+    if [[ "$EDITOR_TYPE" == "neovim" ]]; then
+        local temp_config="$HOME/.config/nvim/temp_init.vim"
+        print_info "创建临时插件配置..."
+
+        # 只包含插件定义部分，不包含插件配置
+        cat > "$temp_config" << 'EOF'
+" 临时配置 - 仅用于插件安装
+call plug#begin('~/.config/nvim/plugged')
+
+" === 核心插件 ===
+Plug 'neovim/nvim-lspconfig'
+Plug 'williamboman/mason.nvim'
+Plug 'williamboman/mason-lspconfig.nvim'
+
+" === 补全引擎 ===
+Plug 'hrsh7th/nvim-cmp'
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'hrsh7th/cmp-buffer'
+Plug 'hrsh7th/cmp-path'
+Plug 'hrsh7th/cmp-cmdline'
+
+" === 代码片段 ===
+Plug 'L3MON4D3/LuaSnip'
+Plug 'saadparwaiz1/cmp_luasnip'
+Plug 'rafamadriz/friendly-snippets'
+
+" === 语法高亮 ===
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+
+" === 模糊搜索 ===
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-telescope/telescope-fzf-native.nvim', {'do': 'make'}
+
+" === 文件管理 ===
+Plug 'nvim-tree/nvim-tree.lua'
+Plug 'nvim-tree/nvim-web-devicons'
+
+" === Git 集成 ===
+Plug 'lewis6991/gitsigns.nvim'
+Plug 'tpope/vim-fugitive'
+
+" === 编辑增强 ===
+Plug 'windwp/nvim-autopairs'
+Plug 'tpope/vim-surround'
+Plug 'numToStr/Comment.nvim'
+Plug 'folke/flash.nvim'
+
+" === UI 和主题 ===
+Plug 'folke/tokyonight.nvim'
+Plug 'nvim-lualine/lualine.nvim'
+Plug 'akinsho/bufferline.nvim'
+Plug 'folke/which-key.nvim'
+
+" === 代码诊断 ===
+Plug 'folke/trouble.nvim'
+
+" === 终端 ===
+Plug 'akinsho/toggleterm.nvim'
+
+" === 特殊功能 ===
+Plug 'github/copilot.vim'
+
+call plug#end()
+EOF
+    fi
+}
+
 # 安装编辑器插件
 install_editor_plugins() {
     print_info "安装编辑器插件... (这可能需要几分钟)"
 
     if [[ "$EDITOR_TYPE" == "neovim" ]]; then
-        # 安装 Neovim 插件
+        # 创建临时配置用于插件安装
+        create_temp_plugin_config
+
+        # 使用临时配置安装插件
         print_info "正在安装 Neovim 插件..."
-        nvim --headless +PlugInstall +qall
+        nvim -u "$HOME/.config/nvim/temp_init.vim" --headless +PlugInstall +qall
 
-        # 安装 Treesitter 解析器
+        # 移除临时配置
+        rm -f "$HOME/.config/nvim/temp_init.vim"
+
+        # 现在使用完整配置安装其他组件
         print_info "安装 Treesitter 解析器..."
-        nvim --headless +"TSInstall c cpp python go rust lua vim javascript typescript html css json yaml" +qall 2>/dev/null || print_warning "部分 Treesitter 解析器安装失败"
+        nvim --headless +"TSInstall c cpp python vim lua json" +qall 2>/dev/null || print_warning "部分 Treesitter 解析器安装失败"
 
-        # 安装 LSP 服务器
+        # 安装 LSP 服务器 (仅 C/C++ 和 Python)
         print_info "安装 LSP 服务器..."
-        nvim --headless +"MasonInstall clangd pyright gopls rust-analyzer typescript-language-server lua-language-server" +qall 2>/dev/null || print_warning "部分 LSP 服务器安装失败"
+        nvim --headless +"MasonInstall clangd pyright" +qall 2>/dev/null || print_warning "部分 LSP 服务器安装失败"
 
         print_success "Neovim 插件安装完成"
     else
