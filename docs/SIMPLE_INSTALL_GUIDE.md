@@ -4,17 +4,36 @@
 ✅ **已修复 `lspconfig` 弃用警告** - 使用新的 `vim.lsp.config` API
 ✅ **已修复插件安装顺序问题** - 解决 "module 'mason' not found" 错误
 ✅ **修复文件树快捷键冲突** - `Ctrl+n` 改为 `Space+e` 和 `F2`
+✅ **修复文件树图标乱码问题** - 默认使用简单 ASCII 图标 🔧
+✅ **修复包安装错误** - 移除不存在的 `gofmt` 包，专注 C/C++/Python
+✅ **新增自动安装模式** - `./build.sh --auto` 一键完成安装 ⭐
+✅ **可选择跳过个人信息配置** - 不再强制输入作者信息
 ✅ **添加安全检查机制** - 所有插件都有存在性检查，避免崩溃
 ✅ **简化配置** - 仅支持 C、C++、Python 三种语言
 ✅ **优化安装流程** - 使用临时配置确保安装稳定性
 ✅ **智能错误处理** - 插件缺失时显示警告而不崩溃
 
-## 快速安装
+## 🚀 快速安装
 
+### 自动安装（推荐）⭐
+```bash
+cd /home/lucas/myVimrc
+./build.sh --auto
+```
+**特点**: 自动选择极致现代型 Neovim，跳过个人信息配置，一键完成！
+
+### 交互式安装
 ```bash
 cd /home/lucas/myVimrc
 ./build.sh
 # 选择选项 2: 极致现代型 Neovim
+# 可以选择配置或跳过个人信息
+```
+**特点**: 可以自定义选择，配置个人信息
+
+### 查看所有选项
+```bash
+./build.sh --help
 ```
 
 ## 核心功能
@@ -101,11 +120,22 @@ cd /home/lucas/myVimrc
 - **`Space + e`** ⭐ (推荐，现代编辑器标准)
 - **`F2`** (备用，绝不冲突)
 
+### 🔤 文件树图标乱码问题
+**问题**: 文件树中显示乱码字符如 ``, `` 等
+**原因**: 缺少 Nerd Font 字体支持
+**快速解决**: 在 Neovim 中运行 `:NvimTreeSimpleIcons`，然后重启
+**详细解决**: 查看 [FILETREE_ICONS_FIX.md](FILETREE_ICONS_FIX.md)
+
 ### 如果遇到 LSP 错误
 ```bash
 # 重新安装 LSP 服务器
 nvim --headless +"MasonInstall clangd pyright" +qall
 ```
+
+### 📦 包安装错误
+**问题**: `E: Unable to locate package gofmt`
+**原因**: `gofmt` 不是独立包，包含在 `golang` 中
+**解决**: 已修复，现在只安装 C/C++/Python 相关工具
 
 ### 如果插件有问题
 ```bash

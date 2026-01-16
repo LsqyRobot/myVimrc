@@ -147,13 +147,25 @@ local mason_ok, mason = pcall(require, "mason")
 if not mason_ok then
     vim.notify("Mason plugin not found. Please install plugins first.", vim.log.levels.WARN)
 else
+    -- 根据字体支持设置图标
+    local icons = {
+        package_installed = "[✓]",
+        package_pending = "[>]",
+        package_uninstalled = "[X]"
+    }
+
+    -- 检查是否启用了 Nerd Font
+    if vim.g.have_nerd_font == 1 or vim.env.NERD_FONT == "1" then
+        icons = {
+            package_installed = "✓",
+            package_pending = "➜",
+            package_uninstalled = "✗"
+        }
+    end
+
     mason.setup({
         ui = {
-            icons = {
-                package_installed = "✓",
-                package_pending = "➜",
-                package_uninstalled = "✗"
-            }
+            icons = icons
         }
     })
 end
@@ -177,22 +189,70 @@ if cmp_nvim_lsp_ok then
     capabilities = cmp_nvim_lsp.default_capabilities()
 end
 
+-- LSP 诊断符号配置 (避免乱码)
+local signs = {
+    { name = "DiagnosticSignError", text = "E" },
+    { name = "DiagnosticSignWarn",  text = "W" },
+    { name = "DiagnosticSignHint",  text = "H" },
+    { name = "DiagnosticSignInfo",  text = "I" }
+}
+
+-- 检查是否启用了 Nerd Font
+if vim.g.have_nerd_font == 1 or vim.env.NERD_FONT == "1" then
+    signs = {
+        { name = "DiagnosticSignError", text = "" },
+        { name = "DiagnosticSignWarn",  text = "" },
+        { name = "DiagnosticSignHint",  text = "" },
+        { name = "DiagnosticSignInfo",  text = "" }
+    }
+end
+
+-- 设置诊断符号
+for _, sign in ipairs(signs) do
+    vim.fn.sign_define(sign.name, { texthl = sign.name, text = sign.text, numhl = "" })
+end
+
+-- 配置诊断显示
+vim.diagnostic.config({
+    virtual_text = {
+        prefix = '●', -- 可以是其他符号，但 ● 兼容性最好
+    },
+    signs = true,
+    underline = true,
+    update_in_insert = false,
+    severity_sort = false,
+})
+
 -- LSP 快捷键设置
 local on_attach = function(client, bufnr)
     local bufopts = { noremap=true, silent=true, buffer=bufnr }
 
+    print(string.format("✅ LSP 已连接: %s", client.name))
+
+    -- 智能跳转函数 - 带错误处理
+    local function safe_lsp_call(func, fallback_msg)
+        return function()
+            local success, result = pcall(func)
+            if not success then
+                vim.notify(fallback_msg or "LSP 功能不可用，尝试使用 :GenerateTags 生成 ctags", vim.log.levels.WARN)
+            end
+        end
+    end
+
     -- 代码导航
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
-    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
-    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
-    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
+    vim.keymap.set('n', 'gd', safe_lsp_call(vim.lsp.buf.definition, "跳转失败，尝试 <leader>gd 使用 ctags"), bufopts)
+    vim.keymap.set('n', 'gD', safe_lsp_call(vim.lsp.buf.declaration), bufopts)
+    vim.keymap.set('n', 'gi', safe_lsp_call(vim.lsp.buf.implementation), bufopts)
+    vim.keymap.set('n', 'gr', safe_lsp_call(vim.lsp.buf.references), bufopts)
+    vim.keymap.set('n', 'K', safe_lsp_call(vim.lsp.buf.hover), bufopts)
+    vim.keymap.set('n', '<C-k>', safe_lsp_call(vim.lsp.buf.signature_help), bufopts)
 
     -- 代码操作
-    vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, bufopts)
-    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, bufopts)
-    vim.keymap.set('n', '<leader>f', function() vim.lsp.buf.format { async = true } end, bufopts)
+    vim.keymap.set('n', '<leader>rn', safe_lsp_call(vim.lsp.buf.rename), bufopts)
+    vim.keymap.set('n', '<leader>ca', safe_lsp_call(vim.lsp.buf.code_action), bufopts)
+    vim.keymap.set('n', '<leader>f', function()
+        pcall(function() vim.lsp.buf.format { async = true } end)
+    end, bufopts)
 
     -- 诊断
     vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, bufopts)
@@ -201,9 +261,12 @@ local on_attach = function(client, bufnr)
 end
 
 -- 配置 LSP 服务器 (使用新的 vim.lsp.config API)
+-- 获取 Mason 安装路径
+local mason_path = vim.fn.stdpath("data") .. "/mason/bin"
+
 -- C/C++ 语言服务器
 vim.lsp.config.clangd = {
-    cmd = { 'clangd' },
+    cmd = { mason_path .. '/clangd' },
     filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda', 'proto' },
     on_attach = on_attach,
     capabilities = capabilities,
@@ -211,11 +274,72 @@ vim.lsp.config.clangd = {
 
 -- Python 语言服务器
 vim.lsp.config.pyright = {
-    cmd = { 'pyright-langserver', '--stdio' },
+    cmd = { mason_path .. '/pyright-langserver', '--stdio' },
     filetypes = { 'python' },
     on_attach = on_attach,
     capabilities = capabilities,
 }
+
+-- ===== LSP 调试和状态检查 =====
+-- 添加 LSP 状态检查命令
+vim.api.nvim_create_user_command('LspStatus', function()
+    local clients = vim.lsp.get_clients()
+    if #clients == 0 then
+        print("❌ 没有活动的 LSP 客户端")
+        print("💡 提示: 打开一个 .c, .cpp, .py 或其他支持的文件")
+    else
+        print("✅ 活动的 LSP 客户端:")
+        for _, client in ipairs(clients) do
+            print(string.format("  - %s (ID: %d)", client.name, client.id))
+        end
+    end
+end, { desc = "检查 LSP 服务器状态" })
+
+-- 添加 LSP 重启命令
+vim.api.nvim_create_user_command('LspRestart', function()
+    vim.lsp.stop_client(vim.lsp.get_clients())
+    vim.defer_fn(function()
+        vim.cmd('edit')
+    end, 500)
+    print("🔄 LSP 服务器已重启")
+end, { desc = "重启 LSP 服务器" })
+
+-- LSP 诊断快捷键映射
+vim.keymap.set('n', '<leader>ls', '<cmd>LspStatus<cr>', { desc = 'LSP Status' })
+vim.keymap.set('n', '<leader>lr', '<cmd>LspRestart<cr>', { desc = 'LSP Restart' })
+
+-- ===== 备用 ctags 支持 =====
+-- 检查并设置 ctags 支持
+local function setup_ctags_fallback()
+    -- 检查是否存在 ctags
+    if vim.fn.executable('ctags') == 1 then
+        -- 设置 tags 文件查找路径
+        vim.opt.tags:prepend('./tags')
+        vim.opt.tags:prepend('./TAGS')
+        vim.opt.tags:prepend('tags')
+
+        -- 自动生成 ctags 命令
+        vim.api.nvim_create_user_command('GenerateTags', function()
+            local cmd = 'ctags -R --languages=C,C++,Python --exclude=node_modules --exclude=.git .'
+            vim.fn.system(cmd)
+            print("✅ ctags 已生成")
+        end, { desc = "生成 ctags 文件" })
+
+        -- ctags 跳转快捷键 (备用)
+        vim.keymap.set('n', '<leader>gd', 'g<C-]>', { desc = "ctags 跳转到定义" })
+        vim.keymap.set('n', '<C-]>', 'g<C-]>', { desc = "ctags 跳转到定义" })
+
+        -- ctags 相关快捷键
+        vim.keymap.set('n', '<leader>ct', '<cmd>GenerateTags<cr>', { desc = 'Generate ctags' })
+
+        print("📋 ctags 备用支持已启用")
+    else
+        print("⚠️ ctags 未安装，建议安装以获得备用跳转支持: sudo apt install universal-ctags")
+    end
+end
+
+-- 延迟初始化 ctags 支持
+vim.defer_fn(setup_ctags_fallback, 1000)
 
 -- ===== 补全配置 (nvim-cmp) =====
 local cmp_ok, cmp = pcall(require, 'cmp')
@@ -310,10 +434,20 @@ local telescope_ok, telescope = pcall(require, 'telescope')
 local telescope_builtin_ok, telescope_builtin = pcall(require, 'telescope.builtin')
 
 if telescope_ok then
+    -- 使用简单字符避免乱码问题
+    local prompt_prefix = "> "
+    local selection_caret = "* "
+
+    -- 检查是否启用了 Nerd Font
+    if vim.g.have_nerd_font == 1 or vim.env.NERD_FONT == "1" then
+        prompt_prefix = "🔍 "
+        selection_caret = "➤ "
+    end
+
     telescope.setup({
         defaults = {
-            prompt_prefix = "🔍 ",
-            selection_caret = "➤ ",
+            prompt_prefix = prompt_prefix,
+            selection_caret = selection_caret,
             path_display = { "truncate" },
             file_ignore_patterns = {
                 "node_modules", ".git/", "*.pyc", "__pycache__",
@@ -348,7 +482,18 @@ end
 -- ===== 文件树配置 =====
 local nvim_tree_ok, nvim_tree = pcall(require, "nvim-tree")
 if nvim_tree_ok then
-    nvim_tree.setup({
+    -- 图标模式选择 (默认使用简单图标避免乱码)
+    local use_simple_icons = true
+
+    -- 检查是否强制禁用图标
+    local disable_icons = vim.g.nvim_tree_disable_icons or false
+
+    -- 检查环境变量是否设置了 Nerd Font 支持
+    if vim.env.NERD_FONT == "1" or vim.g.have_nerd_font == 1 then
+        use_simple_icons = false
+    end
+
+    local config = {
         disable_netrw = true,
         hijack_netrw = true,
         update_focused_file = {
@@ -363,27 +508,110 @@ if nvim_tree_ok then
         },
         renderer = {
             icons = {
-                glyphs = {
-                    default = "",
-                    symlink = "",
-                    folder = {
-                        arrow_closed = "",
-                        arrow_open = "",
-                        default = "",
-                        open = "",
-                        empty = "",
-                        empty_open = "",
-                        symlink = "",
-                        symlink_open = "",
-                    },
+                show = {
+                    file = true,
+                    folder = true,
+                    folder_arrow = true,
+                    git = true,
                 },
             },
         },
-    })
+    }
+
+    -- 根据配置选择图标模式
+    if disable_icons then
+        -- 完全禁用图标模式
+        config.renderer.icons.show = {
+            file = false,
+            folder = false,
+            folder_arrow = true,
+            git = false,
+        }
+        config.renderer.icons.glyphs = {
+            folder = {
+                arrow_closed = "+",
+                arrow_open = "-",
+            },
+        }
+        vim.notify("File tree icons disabled", vim.log.levels.INFO)
+    elseif use_simple_icons then
+        -- 简单 ASCII 图标配置 (兼容所有终端)
+        config.renderer.icons.glyphs = {
+            default = "",
+            symlink = "->",
+            folder = {
+                arrow_closed = "+",
+                arrow_open = "-",
+                default = "[D]",
+                open = "[D]",
+                empty = "[E]",
+                empty_open = "[E]",
+                symlink = "[L]",
+                symlink_open = "[L]",
+            },
+            git = {
+                unstaged = "M",
+                staged = "A",
+                unmerged = "U",
+                renamed = "R",
+                deleted = "D",
+                untracked = "?",
+                ignored = "I",
+            },
+        }
+        vim.notify("Using simple ASCII icons for file tree (no font required)", vim.log.levels.INFO)
+    else
+        -- Nerd Font 图标配置 (需要特殊字体)
+        config.renderer.icons.glyphs = {
+            default = "",
+            symlink = "",
+            folder = {
+                arrow_closed = "",
+                arrow_open = "",
+                default = "",
+                open = "",
+                empty = "",
+                empty_open = "",
+                symlink = "",
+                symlink_open = "",
+            },
+        }
+        vim.notify("Using Nerd Font icons for file tree", vim.log.levels.INFO)
+    end
+
+    nvim_tree.setup(config)
 
     -- 文件树快捷键 (避免与默认补全快捷键冲突)
     vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>', { silent = true })
     vim.keymap.set('n', '<F2>', ':NvimTreeToggle<CR>', { silent = true })
+
+    -- 添加用户命令来切换图标模式
+    vim.api.nvim_create_user_command('NvimTreeDisableIcons', function()
+        vim.g.nvim_tree_disable_icons = 1
+        vim.notify("Icons disabled. Please restart Neovim to take effect.", vim.log.levels.INFO)
+    end, { desc = "Disable nvim-tree icons completely" })
+
+    vim.api.nvim_create_user_command('NvimTreeEnableNerdFont', function()
+        vim.g.have_nerd_font = 1
+        vim.notify("Nerd Font enabled. Please restart Neovim to take effect.", vim.log.levels.INFO)
+    end, { desc = "Enable Nerd Font icons for nvim-tree" })
+
+    vim.api.nvim_create_user_command('NvimTreeSimpleIcons', function()
+        vim.g.nvim_tree_disable_icons = 0
+        vim.g.have_nerd_font = 0
+        vim.notify("Simple ASCII icons enabled. Please restart Neovim to take effect.", vim.log.levels.INFO)
+    end, { desc = "Use simple ASCII icons for nvim-tree" })
+
+    -- 添加全局图标切换命令
+    vim.api.nvim_create_user_command('ToggleNerdFont', function()
+        if vim.g.have_nerd_font == 1 then
+            vim.g.have_nerd_font = 0
+            vim.notify("Nerd Font disabled. Using simple ASCII icons. Please restart Neovim.", vim.log.levels.INFO)
+        else
+            vim.g.have_nerd_font = 1
+            vim.notify("Nerd Font enabled. Using fancy icons. Please restart Neovim.", vim.log.levels.INFO)
+        end
+    end, { desc = "Toggle between Nerd Font and simple ASCII icons globally" })
 else
     vim.notify("nvim-tree not found. File explorer disabled.", vim.log.levels.WARN)
 end
@@ -391,7 +619,18 @@ end
 -- ===== 其他插件安全加载 =====
 -- Git Signs
 pcall(function()
-    require('gitsigns').setup {
+    -- 根据字体支持设置图标
+    local signs = {
+        add          = { text = '+' },
+        change       = { text = '~' },
+        delete       = { text = '_' },
+        topdelete    = { text = '^' },
+        changedelete = { text = '~' },
+        untracked    = { text = '?' },
+    }
+
+    -- 检查是否启用了 Nerd Font
+    if vim.g.have_nerd_font == 1 or vim.env.NERD_FONT == "1" then
         signs = {
             add          = { text = '│' },
             change       = { text = '│' },
@@ -399,18 +638,34 @@ pcall(function()
             topdelete    = { text = '‾' },
             changedelete = { text = '~' },
             untracked    = { text = '┆' },
-        },
+        }
+    end
+
+    require('gitsigns').setup {
+        signs = signs,
     }
 end)
 
 -- 状态栏配置
 pcall(function()
+    -- 根据字体支持设置图标
+    local icons_enabled = false
+    local component_separators = { left = '|', right = '|'}
+    local section_separators = { left = '', right = ''}
+
+    -- 检查是否启用了 Nerd Font
+    if vim.g.have_nerd_font == 1 or vim.env.NERD_FONT == "1" then
+        icons_enabled = true
+        component_separators = { left = '', right = ''}
+        section_separators = { left = '', right = ''}
+    end
+
     require('lualine').setup {
         options = {
-            icons_enabled = true,
+            icons_enabled = icons_enabled,
             theme = 'auto',
-            component_separators = { left = '', right = ''},
-            section_separators = { left = '', right = ''},
+            component_separators = component_separators,
+            section_separators = section_separators,
         },
         sections = {
             lualine_a = {'mode'},
@@ -550,3 +805,9 @@ imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
 " s + 字符     = 快速跳转
 " gcc          = 注释行
 " Ctrl + j     = Copilot 确认建议
+"
+" ===== 文件树图标问题解决 =====
+" 如果看到乱码，在 Neovim 中运行：
+" :NvimTreeDisableIcons    (完全禁用图标)
+" :NvimTreeSimpleIcons     (使用简单 ASCII 图标)
+" :NvimTreeEnableNerdFont  (启用 Nerd Font，需先安装字体)

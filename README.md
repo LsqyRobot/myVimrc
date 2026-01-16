@@ -13,14 +13,26 @@
 
 ## 🚀 一键安装
 
+### 自动安装（推荐）⭐
+```bash
+cd /home/lucas/myVimrc
+./build.sh --auto
+```
+**特点**: 自动选择极致现代型 Neovim，跳过个人信息，一键完成！
+
+### 交互式安装
 ```bash
 cd /home/lucas/myVimrc
 ./build.sh
 ```
-
 安装过程中会提示选择配置类型：
 - **选项 1**: 传统稳定 Vim 配置
-- **选项 2**: 极致现代型 Neovim 配置 ⭐ **推荐**
+- **选项 2**: 极致现代型 Neovim 配置 ⭐
+
+### 查看所有选项
+```bash
+./build.sh --help
+```
 
 ## 🔥 极致现代型 Neovim 特性
 
@@ -119,13 +131,16 @@ cd /home/lucas/myVimrc
 myVimrc/
 ├── init.vim           # Neovim 配置 (15KB+)
 ├── .vimrc             # 传统 Vim 配置 (8KB+)
-├── build.sh           # 智能安装脚本 (19KB+)
+├── build.sh           # 智能安装脚本 (20KB+)
 ├── .clang-format      # C++ 格式化配置
 ├── README.md          # 项目说明 (当前文件)
 └── docs/              # 📚 文档目录
     ├── README.md                # 文档导航页
+    ├── AUTO_INSTALL_GUIDE.md    # 自动安装指南 🚀
     ├── SIMPLE_INSTALL_GUIDE.md  # 简化安装指南 ⭐
     ├── NEOVIM_GUIDE.md          # 详细使用指南
+    ├── INSTALL_FIX_GUIDE.md     # 安装问题修复
+    ├── FILETREE_ICONS_FIX.md   # 文件树图标乱码修复 🔧
     └── UPGRADE_GUIDE.md         # 升级指南
 ```
 
@@ -232,6 +247,11 @@ vim +PlugUpdate +qall
 - **2025-01-16** 🛠️ **修复更新**: 解决插件安装问题
   - 修复 `lspconfig` 弃用警告
   - 解决 "module 'mason' not found" 错误
+  - 修复文件树快捷键冲突 (`Ctrl+n` → `Space+e`)
+  - **修复文件树图标乱码问题** 🔧 - 提供多种图标模式
+  - 修复包安装错误 (移除不存在的 `gofmt` 包)
+  - **添加自动安装选项** (`./build.sh --auto`) ⭐
+  - **可选择跳过个人信息配置**
   - 添加安全检查机制，避免配置崩溃
   - 优化安装流程，使用临时配置确保稳定性
   - 简化配置，专注 C/C++/Python 三种语言

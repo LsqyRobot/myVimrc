@@ -237,9 +237,9 @@ install_system_deps() {
                 sudo apt install -y vim universal-ctags silversearcher-ag
             fi
 
-            # 代码格式化工具
+            # 代码格式化工具 (仅 C/C++ 和 Python)
             print_info "安装代码格式化工具..."
-            sudo apt install -y clang-format python3-yapf golang gofmt || print_warning "某些格式化工具安装失败"
+            sudo apt install -y clang-format python3-yapf || print_warning "某些格式化工具安装失败"
 
             # 安装 Node.js (Copilot和某些插件需要)
             if ! command_exists node; then
@@ -577,7 +577,22 @@ setup_config_files() {
 configure_personal_info() {
     print_info "配置个人信息..."
 
+    # 询问用户是否需要配置个人信息
+    echo
+    print_info "个人信息用于代码文件头部注释 (如作者姓名、邮箱等)"
+    read -p "是否需要配置个人信息? (y/N): " configure_info
+
+    if [[ ! $configure_info =~ ^[Yy]$ ]]; then
+        print_info "跳过个人信息配置"
+        return 0
+    fi
+
     local vimrc="$HOME/.vimrc"
+
+    # 针对 Neovim 用户的配置路径
+    if [[ "$EDITOR_TYPE" == "neovim" ]]; then
+        vimrc="$HOME/.config/nvim/init.vim"
+    fi
 
     # 检查是否启用 vim-header 插件
     if grep -q "^\s*\".*vim-header" "$vimrc"; then
@@ -586,26 +601,40 @@ configure_personal_info() {
         if [[ $enable_header =~ ^[Yy]$ ]]; then
             sed -i 's/^\s*"\s*Plug.*vim-header/Plug/' "$vimrc"
             print_success "已启用 vim-header 插件"
+        else
+            print_info "跳过个人信息配置 (vim-header 插件未启用)"
+            return 0
         fi
     fi
 
     # 获取用户信息
     echo
-    print_info "请输入个人信息 (直接回车保持默认值):"
+    print_info "请输入个人信息 (直接回车使用默认值):"
 
-    read -p "作者姓名 [zhangxiaolong]: " author_name
-    author_name=${author_name:-zhangxiaolong}
+    read -p "作者姓名 [Developer]: " author_name
+    author_name=${author_name:-Developer}
 
-    read -p "邮箱 [lsqyRobot@gmail.com]: " author_email
-    author_email=${author_email:-lsqyRobot@gmail.com}
+    read -p "邮箱 [developer@example.com]: " author_email
+    author_email=${author_email:-developer@example.com}
 
-    read -p "版权信息 [@copyright Copyright (c) LsqyRobot]: " copyright
-    copyright=${copyright:-@copyright Copyright (c) LsqyRobot}
+    read -p "版权信息 [Copyright (c) $(date +%Y)]: " copyright
+    copyright=${copyright:-Copyright (c) $(date +%Y)}
 
     # 更新配置文件
-    sed -i "s/let g:header_field_author = .*/let g:header_field_author = '$author_name'/" "$vimrc"
-    sed -i "s/let g:header_field_author_email = .*/let g:header_field_author_email = '$author_email'/" "$vimrc"
-    sed -i "s/let g:header_field_copyright = .*/let g:header_field_copyright = '$copyright'/" "$vimrc"
+    if grep -q "let g:header_field_author" "$vimrc"; then
+        sed -i "s/let g:header_field_author = .*/let g:header_field_author = '$author_name'/" "$vimrc"
+        sed -i "s/let g:header_field_author_email = .*/let g:header_field_author_email = '$author_email'/" "$vimrc"
+        sed -i "s/let g:header_field_copyright = .*/let g:header_field_copyright = '$copyright'/" "$vimrc"
+    else
+        # 如果配置文件中没有相关字段，添加它们
+        cat >> "$vimrc" << EOF
+
+" ===== 个人信息配置 =====
+let g:header_field_author = '$author_name'
+let g:header_field_author_email = '$author_email'
+let g:header_field_copyright = '$copyright'
+EOF
+    fi
 
     print_success "个人信息配置完成"
 }
@@ -994,6 +1023,23 @@ upgrade_neovim() {
     print_info "运行: ./build.sh 选择选项 2"
 }
 
+# 显示使用帮助
+show_help() {
+    echo
+    print_success "=== Lucas的Vim配置一键安装脚本 ==="
+    echo
+    print_info "用法:"
+    echo "  ./build.sh                 交互式安装 (默认)"
+    echo "  ./build.sh --auto          自动安装 (极致现代型 Neovim，跳过个人信息)"
+    echo "  ./build.sh --upgrade-neovim  升级 Neovim 到最新版"
+    echo "  ./build.sh --help          显示此帮助信息"
+    echo
+    print_info "推荐用法:"
+    echo "  🚀 快速安装: ./build.sh --auto"
+    echo "  ⚙️  自定义安装: ./build.sh"
+    echo
+}
+
 # 主安装流程
 main() {
     echo
@@ -1001,17 +1047,37 @@ main() {
     print_info "这个脚本将安装所有必要的依赖和插件"
     echo
 
-    # 检查是否是升级模式
-    if [[ "$1" == "--upgrade-neovim" ]]; then
-        upgrade_neovim
-        exit 0
-    fi
+    # 处理命令行参数
+    case "$1" in
+        --help|-h)
+            show_help
+            exit 0
+            ;;
+        --upgrade-neovim)
+            upgrade_neovim
+            exit 0
+            ;;
+        --auto)
+            local auto_mode=true
+            print_info "🚀 自动安装模式: 使用极致现代型 Neovim，跳过个人信息配置"
+            ;;
+        "")
+            local auto_mode=false
+            ;;
+        *)
+            print_error "未知参数: $1"
+            show_help
+            exit 1
+            ;;
+    esac
 
-    # 询问用户确认
-    read -p "是否继续安装? (Y/n): " confirm
-    if [[ $confirm =~ ^[Nn]$ ]]; then
-        print_info "安装已取消"
-        exit 0
+    # 询问用户确认（自动模式下跳过）
+    if [[ "$auto_mode" != "true" ]]; then
+        read -p "是否继续安装? (Y/n): " confirm
+        if [[ $confirm =~ ^[Nn]$ ]]; then
+            print_info "安装已取消"
+            exit 0
+        fi
     fi
 
     # 检查是否为root用户
@@ -1020,8 +1086,13 @@ main() {
         exit 1
     fi
 
-    # 选择编辑器类型
-    choose_editor_type
+    # 选择编辑器类型（自动模式下直接选择 Neovim）
+    if [[ "$auto_mode" == "true" ]]; then
+        EDITOR_TYPE="neovim"
+        print_success "已自动选择极致现代型 Neovim 配置"
+    else
+        choose_editor_type
+    fi
 
     # 执行安装步骤
     install_system_deps
@@ -1034,7 +1105,13 @@ main() {
         generate_ctags
     fi
 
-    configure_personal_info
+    # 配置个人信息（自动模式下跳过）
+    if [[ "$auto_mode" != "true" ]]; then
+        configure_personal_info
+    else
+        print_info "自动模式: 跳过个人信息配置"
+    fi
+
     install_editor_plugins
     setup_copilot
 
