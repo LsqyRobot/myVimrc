@@ -36,7 +36,7 @@ cd /home/lucas/myVimrc
 | `Space + w` | 保存文件 | 快速保存 |
 | `Space + q` | 退出 | 快速退出 |
 | `Space + x` | 保存并退出 | |
-| `Ctrl + n` | 文件树 | 切换 NvimTree |
+| `Space + e` / `F2` | 文件树 | 切换 NvimTree ⭐ |
 | `Ctrl + \` | 终端 | 浮动终端 |
 | `ESC` | 清除高亮 | 取消搜索高亮 |
 

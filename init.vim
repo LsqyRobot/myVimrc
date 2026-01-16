@@ -381,7 +381,9 @@ if nvim_tree_ok then
         },
     })
 
-    vim.keymap.set('n', '<C-n>', ':NvimTreeToggle<CR>', { silent = true })
+    -- 文件树快捷键 (避免与默认补全快捷键冲突)
+    vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>', { silent = true })
+    vim.keymap.set('n', '<F2>', ':NvimTreeToggle<CR>', { silent = true })
 else
     vim.notify("nvim-tree not found. File explorer disabled.", vim.log.levels.WARN)
 end
@@ -533,6 +535,7 @@ imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
 
 " ===== 快速开发快捷键总结 =====
 " Space + w    = 保存文件
+" Space + e    = 文件树 (主要)
 " Space + ff   = 搜索文件
 " Space + fg   = 全局搜索
 " Space + fb   = 搜索缓冲区
@@ -542,7 +545,7 @@ imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
 " gd           = 跳转到定义
 " gr           = 查找引用
 " K            = 显示文档
-" Ctrl + n     = 文件树
+" F2           = 文件树 (备用)
 " Ctrl + \     = 终端
 " s + 字符     = 快速跳转
 " gcc          = 注释行

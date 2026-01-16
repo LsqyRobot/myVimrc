@@ -82,7 +82,7 @@ cd /home/lucas/myVimrc
 ### 极致现代型 Neovim (Leader: `Space`)
 | 功能 | 快捷键 | 说明 |
 |------|--------|------|
-| 文件树 | `Ctrl + n` | NvimTree |
+| 文件树 | `Space + e` / `F2` | NvimTree ⭐ |
 | 搜索文件 | `Space + ff` | Telescope |
 | 全局搜索 | `Space + fg` | 内容搜索 |
 | 跳转定义 | `gd` | LSP 智能跳转 |
