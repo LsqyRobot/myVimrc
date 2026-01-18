@@ -35,6 +35,19 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# 跨平台 sed 函数 (兼容 macOS 和 Linux)
+cross_platform_sed() {
+    local pattern="$1"
+    local file="$2"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        # macOS 需要在 -i 后面指定备份后缀
+        cross_platform_sed '' "$pattern" "$file"
+    else
+        # Linux 版本
+        cross_platform_sed "$pattern" "$file"
+    fi
+}
+
 # 安装 tree-sitter-cli
 install_tree_sitter_cli() {
     if command_exists tree-sitter; then
@@ -69,7 +82,19 @@ install_tree_sitter_cli() {
     # 方法3: 下载预编译二进制文件
     print_info "下载 tree-sitter-cli 预编译二进制文件..."
     local arch=$(uname -m)
+    local os_type=$(uname -s)
     local os="linux"
+
+    # 确定操作系统
+    case $os_type in
+        Darwin) os="macos";;
+        Linux) os="linux";;
+        *)
+            print_warning "不支持的操作系统: $os_type，跳过 tree-sitter-cli 安装"
+            print_info "你可以稍后手动安装: npm install -g tree-sitter-cli"
+            return 1
+            ;;
+    esac
 
     # 确定架构
     case $arch in
@@ -126,8 +151,24 @@ install_tree_sitter_cli() {
     return 1
 }
 
+# 检测操作系统
+detect_os() {
+    local os_type=$(uname -s)
+    case $os_type in
+        Darwin)
+            echo "macos"
+            ;;
+        Linux)
+            detect_linux_distro
+            ;;
+        *)
+            echo "unknown"
+            ;;
+    esac
+}
+
 # 检测Linux发行版
-detect_distro() {
+detect_linux_distro() {
     if [[ -f /etc/os-release ]]; then
         . /etc/os-release
         echo $ID
@@ -169,10 +210,10 @@ choose_editor_type() {
 install_system_deps() {
     print_info "开始安装系统依赖..."
 
-    local distro=$(detect_distro)
-    print_info "检测到系统: $distro"
+    local os_distro=$(detect_os)
+    print_info "检测到系统: $os_distro"
 
-    case $distro in
+    case $os_distro in
         ubuntu|debian|linuxmint)
             print_info "使用 apt 包管理器安装依赖..."
             sudo apt update
@@ -356,9 +397,91 @@ install_system_deps() {
                 mkdir -p ~/.cache/vim/ctags
             fi
             ;;
+        macos)
+            print_info "检测到 macOS 系统，使用 Homebrew 包管理器安装依赖..."
+
+            # 检查 Homebrew 是否安装
+            if ! command_exists brew; then
+                print_info "Homebrew 未安装，开始安装 Homebrew..."
+                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+                # 添加 Homebrew 到 PATH (适用于 Apple Silicon Mac)
+                if [[ -f /opt/homebrew/bin/brew ]]; then
+                    eval "$(/opt/homebrew/bin/brew shellenv)"
+                    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+                elif [[ -f /usr/local/bin/brew ]]; then
+                    eval "$(/usr/local/bin/brew shellenv)"
+                fi
+
+                if ! command_exists brew; then
+                    print_error "Homebrew 安装失败，请手动安装: https://brew.sh"
+                    exit 1
+                fi
+
+                print_success "Homebrew 安装成功"
+            else
+                print_info "Homebrew 已安装，更新软件包..."
+                brew update
+            fi
+
+            # 基础工具
+            print_info "安装基础工具..."
+            brew install git python3 curl wget
+
+            # 编辑器相关
+            if [[ "$EDITOR_TYPE" == "neovim" ]]; then
+                print_info "安装 Neovim 和现代工具链..."
+
+                # 安装 Neovim
+                brew install neovim
+
+                # 现代搜索和文件查找工具
+                brew install ripgrep fd
+
+                # 安装 Node.js (用于 LSP 和 Copilot)
+                if ! command_exists node; then
+                    print_info "安装 Node.js..."
+                    brew install node
+                fi
+
+                # 安装 tree-sitter-cli
+                if command_exists npm; then
+                    print_info "通过 npm 安装 tree-sitter-cli..."
+                    npm install -g tree-sitter-cli || print_warning "tree-sitter-cli 安装失败"
+                else
+                    print_warning "npm 不可用，跳过 tree-sitter-cli 安装"
+                fi
+
+            else
+                print_info "安装传统 Vim..."
+                # macOS 自带 vim，但我们安装更新版本
+                brew install vim
+
+                # 安装 ctags（macOS 自带的 ctags 功能有限）
+                brew install universal-ctags
+
+                # 安装 ag (the silver searcher)
+                brew install the_silver_searcher
+            fi
+
+            # 代码格式化工具 (仅 C/C++ 和 Python)
+            print_info "安装代码格式化工具..."
+            brew install clang-format || print_warning "clang-format 安装失败"
+
+            # Python 格式化工具
+            pip3 install yapf || print_warning "yapf 安装失败"
+
+            # 创建必要的目录
+            if [[ "$EDITOR_TYPE" == "neovim" ]]; then
+                mkdir -p ~/.config/nvim
+                mkdir -p ~/.local/share/nvim
+            else
+                mkdir -p ~/.cache/vim/ctags
+            fi
+            ;;
         *)
-            print_warning "未识别的Linux发行版: $distro"
-            print_info "请手动安装以下依赖: vim git python3 python3-pip ctags ag clang-format"
+            print_warning "未识别的操作系统: $os_distro"
+            print_info "请手动安装以下依赖: vim/neovim git python3 python3-pip ctags ripgrep fd clang-format"
             read -p "按Enter继续，或者Ctrl+C退出..."
             ;;
     esac
@@ -450,7 +573,7 @@ setup_auto_ctags_config() {
     # 添加 gutentags 插件
     if ! grep -q "Plug 'ludovicchabant/vim-gutentags'" "$config_file"; then
         # 在插件部分的末尾添加 gutentags
-        sed -i "/call plug#end()/i\\
+        cross_platform_sed "/call plug#end()/i\\
 \\
 \" 自动 ctags 管理\\
 Plug 'ludovicchabant/vim-gutentags'" "$config_file"
@@ -525,8 +648,8 @@ EOF
     # 修复状态栏显示问题
     if grep -q "lualine.setup" "$config_file"; then
         # 替换可能导致乱码的特殊字符
-        sed -i "s/component_separators = '|'/component_separators = { left = '|', right = '|' }/g" "$config_file"
-        sed -i "s/section_separators = ''/section_separators = { left = '', right = '' }/g" "$config_file"
+        cross_platform_sed "s/component_separators = '|'/component_separators = { left = '|', right = '|' }/g" "$config_file"
+        cross_platform_sed "s/section_separators = ''/section_separators = { left = '', right = '' }/g" "$config_file"
         print_success "已修复状态栏显示问题"
     fi
 }
@@ -599,7 +722,7 @@ configure_personal_info() {
         print_warning "vim-header 插件被注释，个人信息配置将不生效"
         read -p "是否启用 vim-header 插件? (y/N): " enable_header
         if [[ $enable_header =~ ^[Yy]$ ]]; then
-            sed -i 's/^\s*"\s*Plug.*vim-header/Plug/' "$vimrc"
+            cross_platform_sed 's/^\s*"\s*Plug.*vim-header/Plug/' "$vimrc"
             print_success "已启用 vim-header 插件"
         else
             print_info "跳过个人信息配置 (vim-header 插件未启用)"
@@ -622,9 +745,9 @@ configure_personal_info() {
 
     # 更新配置文件
     if grep -q "let g:header_field_author" "$vimrc"; then
-        sed -i "s/let g:header_field_author = .*/let g:header_field_author = '$author_name'/" "$vimrc"
-        sed -i "s/let g:header_field_author_email = .*/let g:header_field_author_email = '$author_email'/" "$vimrc"
-        sed -i "s/let g:header_field_copyright = .*/let g:header_field_copyright = '$copyright'/" "$vimrc"
+        cross_platform_sed "s/let g:header_field_author = .*/let g:header_field_author = '$author_name'/" "$vimrc"
+        cross_platform_sed "s/let g:header_field_author_email = .*/let g:header_field_author_email = '$author_email'/" "$vimrc"
+        cross_platform_sed "s/let g:header_field_copyright = .*/let g:header_field_copyright = '$copyright'/" "$vimrc"
     else
         # 如果配置文件中没有相关字段，添加它们
         cat >> "$vimrc" << EOF

@@ -66,7 +66,8 @@ cd /home/lucas/myVimrc
 ## 📦 安装脚本功能
 
 ### 🔧 智能系统检测
-- ✅ **多发行版支持**: Ubuntu/Debian、Fedora/CentOS、Arch Linux
+- ✅ **多平台支持**: macOS、Ubuntu/Debian、Fedora/CentOS、Arch Linux
+- ✅ **包管理器自动适配**: Homebrew (macOS)、apt、dnf/yum、pacman
 - ✅ **版本检测**: 自动检测并安装合适版本的 Neovim
 - ✅ **依赖管理**: 自动安装所有必需依赖
 
@@ -114,6 +115,12 @@ cd /home/lucas/myVimrc
   - 修复弃用警告
   - 快速上手指南
   - 常见问题解决
+
+- **[docs/MACOS_INSTALL_GUIDE.md](docs/MACOS_INSTALL_GUIDE.md)**: 🍎 **macOS 专用指南** ⭐ **Mac 用户必读**
+  - Homebrew 自动安装配置
+  - iTerm2/终端字体设置
+  - macOS 特定优化建议
+  - 系统集成功能指导
 
 - **[docs/NEOVIM_GUIDE.md](docs/NEOVIM_GUIDE.md)**: 📖 **完整使用指南** (7KB+)
   - 详细快捷键表

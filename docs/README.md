@@ -16,6 +16,12 @@
 - **内容**: 修复弃用警告、核心功能、快捷键说明
 - **适合**: 新用户或只需要基础功能的用户
 
+### [MACOS_INSTALL_GUIDE.md](MACOS_INSTALL_GUIDE.md) 🍎 **Mac 用户专用**
+- **用途**: macOS 系统专用安装指南
+- **特点**: Homebrew 自动配置、终端字体设置
+- **内容**: 系统集成、性能优化、故障排除
+- **适合**: 所有 macOS 用户 (Intel 和 Apple Silicon)
+
 ## 📖 详细指南
 
 ### [NEOVIM_GUIDE.md](NEOVIM_GUIDE.md)
@@ -47,9 +53,10 @@
 ## 🗂️ 文档使用建议
 
 ### 对于新用户
-1. 先阅读 [SIMPLE_INSTALL_GUIDE.md](SIMPLE_INSTALL_GUIDE.md)
-2. 完成安装并测试基本功能
-3. 需要更多功能时参考 [NEOVIM_GUIDE.md](NEOVIM_GUIDE.md)
+1. **macOS 用户**: 先阅读 [MACOS_INSTALL_GUIDE.md](MACOS_INSTALL_GUIDE.md) 🍎
+2. **Linux 用户**: 先阅读 [SIMPLE_INSTALL_GUIDE.md](SIMPLE_INSTALL_GUIDE.md)
+3. 完成安装并测试基本功能
+4. 需要更多功能时参考 [NEOVIM_GUIDE.md](NEOVIM_GUIDE.md)
 
 ### 对于现有用户
 1. 升级时参考 [UPGRADE_GUIDE.md](UPGRADE_GUIDE.md)
