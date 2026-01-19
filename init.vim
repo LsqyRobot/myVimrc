@@ -108,6 +108,9 @@ Plug 'stevearc/overseer.nvim'                  " 任务管理器
 " === 特殊功能 ===
 Plug 'github/copilot.vim'                      " GitHub Copilot (可选)
 
+
+" 自动 ctags 管理
+Plug 'ludovicchabant/vim-gutentags'
 call plug#end()
 
 " ===== 基础键位映射 =====
@@ -777,7 +780,7 @@ augroup MyAutoCommands
     autocmd BufEnter * if expand("%:p:h") !~ '^/tmp' | silent! lcd %:p:h | endif
 
     " 保存时自动格式化（仅对支持的语言）
-    autocmd BufWritePre *.py,*.js,*.ts,*.go,*.rs,*.cpp,*.c,*.h lua vim.lsp.buf.format({ async = false })
+    autocmd BufWritePre *.py,*.js,*.ts,*.go,*.rs,*.cpp,*.c,*.h :lua vim.lsp.buf.format({ async = false })
 
     " 高亮当前行（插入模式时取消）
     autocmd InsertLeave,WinEnter * set cursorline
@@ -811,3 +814,37 @@ imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
 " :NvimTreeDisableIcons    (完全禁用图标)
 " :NvimTreeSimpleIcons     (使用简单 ASCII 图标)
 " :NvimTreeEnableNerdFont  (启用 Nerd Font，需先安装字体)
+" ===== Gutentags 自动 ctags 配置 =====
+" 启用 gutentags
+let g:gutentags_enabled = 1
+
+" 项目根目录标识文件
+let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
+
+" tags 文件名
+let g:gutentags_ctags_tagfile = '.tags'
+
+" 同时开启 ctags 支持
+let g:gutentags_modules = ['ctags']
+
+" 配置 ctags 的参数
+let g:gutentags_ctags_extra_args = ['--fields=+niazS', '--extra=+q']
+let g:gutentags_ctags_extra_args += ['--c++-kinds=+px']
+let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
+let g:gutentags_ctags_extra_args += ['--output-format=e-ctags']
+
+" 禁用 gutentags 自动生成 gtags 数据库的功能
+let g:gutentags_auto_add_gtags_cscope = 0
+
+" 在状态栏中显示 tags 生成状态
+let g:gutentags_generate_on_missing = 1
+let g:gutentags_generate_on_write = 1
+let g:gutentags_generate_on_new = 1
+
+" 缓存目录，避免污染项目目录
+let g:gutentags_cache_dir = expand('~/.cache/tags')
+
+" 跳转快捷键
+nnoremap <C-]> g<C-]>
+nnoremap g<C-]> <C-]>
+nnoremap <C-t> :pop<CR>
