@@ -41,10 +41,10 @@ cross_platform_sed() {
     local file="$2"
     if [[ "$(uname -s)" == "Darwin" ]]; then
         # macOS 需要在 -i 后面指定备份后缀
-        cross_platform_sed '' "$pattern" "$file"
+        sed -i '' "$pattern" "$file"
     else
         # Linux 版本
-        cross_platform_sed "$pattern" "$file"
+        sed -i "$pattern" "$file"
     fi
 }
 
