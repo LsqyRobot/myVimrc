@@ -1,0 +1,29 @@
+CompileFlags:
+  Add:
+    - -std=c++17                         # 使用C++17标准
+    - -Wall                              # 启用所有警告
+    - -Wextra                            # 额外警告
+    - -I/usr/include/c++/11              # C++标准库头文件
+    - -I/usr/include/x86_64-linux-gnu/c++/11  # 系统架构特定头文件
+    - -I/usr/include/c++/11/backward     # 向后兼容头文件
+    - -I/usr/lib/gcc/x86_64-linux-gnu/11/include  # GCC内置头文件
+    - -I/usr/local/include               # 本地安装头文件
+    - -I/usr/include/x86_64-linux-gnu    # 系统架构头文件
+    - -I/usr/include                     # 系统头文件
+    - -D_GNU_SOURCE                      # GNU扩展
+    - -D_USE_MATH_DEFINES                # 数学常量（M_PI等）
+    - -D__STDC_CONSTANT_MACROS           # 标准C常量宏
+    - -D__STDC_LIMIT_MACROS              # 标准C限制宏
+
+Diagnostics:
+  ClangTidy:
+    Add:
+      - modernize-*
+      - readability-*
+      - performance-*
+    Remove:
+      - modernize-use-trailing-return-type
+      - readability-magic-numbers
+
+Index:
+  Background: Build

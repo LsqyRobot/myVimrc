@@ -780,7 +780,11 @@ augroup MyAutoCommands
     autocmd BufEnter * if expand("%:p:h") !~ '^/tmp' | silent! lcd %:p:h | endif
 
     " 保存时自动格式化（仅对支持的语言）
-    autocmd BufWritePre *.py,*.js,*.ts,*.go,*.rs,*.cpp,*.c,*.h :lua vim.lsp.buf.format({ async = false })
+    autocmd BufWritePre *.py,*.js,*.ts,*.go,*.rs :lua vim.lsp.buf.format({ async = false })
+
+    " C/C++ 文件使用 clang-format 直接格式化
+    autocmd FileType cpp,c setlocal formatprg=clang-format\ --style=file
+    autocmd BufWritePre *.cpp,*.c,*.h silent! execute '%!clang-format --style=file'
 
     " 高亮当前行（插入模式时取消）
     autocmd InsertLeave,WinEnter * set cursorline
