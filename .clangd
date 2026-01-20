@@ -1,19 +1,59 @@
+# ========================================
+# ROS2 LSP 配置文件 (自动生成)
+# ROS发行版: humble
+# 生成时间: Tue Jan 20 02:41:48 PM CST 2026
+# ROS路径: /opt/ros/humble
+# ========================================
+
 CompileFlags:
   Add:
-    - -std=c++17                         # 使用C++17标准
-    - -Wall                              # 启用所有警告
-    - -Wextra                            # 额外警告
-    - -I/usr/include/c++/11              # C++标准库头文件
-    - -I/usr/include/x86_64-linux-gnu/c++/11  # 系统架构特定头文件
-    - -I/usr/include/c++/11/backward     # 向后兼容头文件
-    - -I/usr/lib/gcc/x86_64-linux-gnu/11/include  # GCC内置头文件
-    - -I/usr/local/include               # 本地安装头文件
-    - -I/usr/include/x86_64-linux-gnu    # 系统架构头文件
-    - -I/usr/include                     # 系统头文件
-    - -D_GNU_SOURCE                      # GNU扩展
-    - -D_USE_MATH_DEFINES                # 数学常量（M_PI等）
-    - -D__STDC_CONSTANT_MACROS           # 标准C常量宏
-    - -D__STDC_LIMIT_MACROS              # 标准C限制宏
+    # C++标准和基础编译选项
+    - -std=c++17
+    - -Wall
+    - -Wextra
+    - -Wpedantic
+
+    # C++标准库头文件
+    - -I/usr/include/c++/11
+    - -I/usr/include/x86_64-linux-gnu/c++/11
+    - -I/usr/include/c++/11/backward
+    - -I/usr/lib/gcc/x86_64-linux-gnu/11/include
+    - -I/usr/local/include
+    - -I/usr/include/x86_64-linux-gnu
+    - -I/usr/include
+
+    # ROS2 humble 头文件路径
+    - -I/opt/ros/humble/include
+    - -I/opt/ros/humble/include/rclcpp
+    - -I/opt/ros/humble/include/rclcpp_lifecycle
+    - -I/opt/ros/humble/include/rclcpp_action
+    - -I/opt/ros/humble/include/rclcpp_components
+    - -I/opt/ros/humble/include/rcl
+    - -I/opt/ros/humble/include/rcl_lifecycle
+    - -I/opt/ros/humble/include/rcutils
+    - -I/opt/ros/humble/include/std_msgs
+    - -I/opt/ros/humble/include/geometry_msgs
+    - -I/opt/ros/humble/include/sensor_msgs
+    - -I/opt/ros/humble/include/nav_msgs
+    - -I/opt/ros/humble/include/tf2_msgs
+    - -I/opt/ros/humble/include/tf2
+    - -I/opt/ros/humble/include/tf2_ros
+    - -I/opt/ros/humble/include/tf2_geometry_msgs
+    - -I/opt/ros/humble/include/lifecycle_msgs
+    - -I/opt/ros/humble/include/builtin_interfaces
+
+    # 标准定义
+    - -D_GNU_SOURCE
+    - -D_USE_MATH_DEFINES
+    - -D__STDC_CONSTANT_MACROS
+    - -D__STDC_LIMIT_MACROS
+
+    # ROS2相关定义
+    - -DROS_DISTRO_HUMBLE
+    - -DRCUTILS_ENABLE_FAULT_INJECTION=0
+    - -DRCL_LOGGING_ENABLED
+    - -DRCLCPP_LIFECYCLE_ENABLED
+    - -DQT_NO_KEYWORDS
 
 Diagnostics:
   ClangTidy:
@@ -21,9 +61,19 @@ Diagnostics:
       - modernize-*
       - readability-*
       - performance-*
+      - cppcoreguidelines-*
+      - bugprone-*
     Remove:
       - modernize-use-trailing-return-type
       - readability-magic-numbers
+      - cppcoreguidelines-avoid-magic-numbers
 
 Index:
   Background: Build
+
+# ========================================
+# 使用说明：
+# 1. 此配置适用于ROS2 humble
+# 2. 在Neovim中使用 :LspRestart 重启语言服务器
+# 3. 测试代码补全：include <rclcpp/rclcpp.hpp>
+# ========================================

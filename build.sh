@@ -1146,6 +1146,316 @@ upgrade_neovim() {
     print_info "运行: ./build.sh 选择选项 2"
 }
 
+# ========================================
+# ROS2 LSP 配置功能
+# ========================================
+
+# 检测ROS2安装
+detect_ros2_installation() {
+    local ros_paths=(
+        "/opt/ros"
+        "/usr/local/opt/ros"
+        "$HOME/ros2_install"
+        "$HOME/.local/opt/ros"
+    )
+
+    local found_distros=()
+
+    for base_path in "${ros_paths[@]}"; do
+        if [[ -d "$base_path" ]]; then
+            for distro in "$base_path"/*; do
+                if [[ -d "$distro" && -f "$distro/setup.bash" ]]; then
+                    local distro_name=$(basename "$distro")
+                    found_distros+=("$distro:$distro_name")
+                fi
+            done
+        fi
+    done
+
+    echo "${found_distros[@]}"
+}
+
+# 生成ROS2 clangd配置
+generate_ros2_clangd_config() {
+    local ros_path="$1"
+    local distro_name="$2"
+    local output_file="$3"
+
+    print_info "生成ROS2 clangd配置文件: $output_file"
+    print_info "ROS2发行版: $distro_name"
+    print_info "ROS2路径: $ros_path"
+
+    # 备份现有配置
+    if [[ -f "$output_file" ]]; then
+        local backup_file="${output_file}.backup.$(date +%Y%m%d_%H%M%S)"
+        print_info "备份现有配置到: $backup_file"
+        cp "$output_file" "$backup_file"
+    fi
+
+    # 生成配置内容
+    cat > "$output_file" << EOF
+# ========================================
+# ROS2 LSP 配置文件 (自动生成)
+# ROS发行版: $distro_name
+# 生成时间: $(date)
+# ROS路径: $ros_path
+# ========================================
+
+CompileFlags:
+  Add:
+    # C++标准和基础编译选项
+    - -std=c++17
+    - -Wall
+    - -Wextra
+    - -Wpedantic
+
+    # C++标准库头文件
+    - -I/usr/include/c++/11
+    - -I/usr/include/x86_64-linux-gnu/c++/11
+    - -I/usr/include/c++/11/backward
+    - -I/usr/lib/gcc/x86_64-linux-gnu/11/include
+    - -I/usr/local/include
+    - -I/usr/include/x86_64-linux-gnu
+    - -I/usr/include
+
+    # ROS2 $distro_name 头文件路径
+    - -I$ros_path/include
+    - -I$ros_path/include/rclcpp
+    - -I$ros_path/include/rclcpp_lifecycle
+    - -I$ros_path/include/rclcpp_action
+    - -I$ros_path/include/rclcpp_components
+    - -I$ros_path/include/rcl
+    - -I$ros_path/include/rcl_lifecycle
+    - -I$ros_path/include/rcutils
+    - -I$ros_path/include/std_msgs
+    - -I$ros_path/include/geometry_msgs
+    - -I$ros_path/include/sensor_msgs
+    - -I$ros_path/include/nav_msgs
+    - -I$ros_path/include/tf2_msgs
+    - -I$ros_path/include/tf2
+    - -I$ros_path/include/tf2_ros
+    - -I$ros_path/include/tf2_geometry_msgs
+    - -I$ros_path/include/lifecycle_msgs
+    - -I$ros_path/include/builtin_interfaces
+
+    # 标准定义
+    - -D_GNU_SOURCE
+    - -D_USE_MATH_DEFINES
+    - -D__STDC_CONSTANT_MACROS
+    - -D__STDC_LIMIT_MACROS
+
+    # ROS2相关定义
+    - -DROS_DISTRO_$(echo "$distro_name" | tr '[:lower:]' '[:upper:]')
+    - -DRCUTILS_ENABLE_FAULT_INJECTION=0
+    - -DRCL_LOGGING_ENABLED
+    - -DRCLCPP_LIFECYCLE_ENABLED
+    - -DQT_NO_KEYWORDS
+
+Diagnostics:
+  ClangTidy:
+    Add:
+      - modernize-*
+      - readability-*
+      - performance-*
+      - cppcoreguidelines-*
+      - bugprone-*
+    Remove:
+      - modernize-use-trailing-return-type
+      - readability-magic-numbers
+      - cppcoreguidelines-avoid-magic-numbers
+
+Index:
+  Background: Build
+
+# ========================================
+# 使用说明：
+# 1. 此配置适用于ROS2 $distro_name
+# 2. 在Neovim中使用 :LspRestart 重启语言服务器
+# 3. 测试代码补全：include <rclcpp/rclcpp.hpp>
+# ========================================
+EOF
+
+    print_success "ROS2 clangd配置生成完成！"
+}
+
+# 配置ROS2环境
+setup_ros2_lsp() {
+    print_info "🤖 开始配置ROS2 LSP环境..."
+
+    # 检测ROS2安装
+    local distros_info
+    distros_info=$(detect_ros2_installation)
+    local distros=($distros_info)
+
+    if [[ ${#distros[@]} -eq 0 ]]; then
+        print_error "未找到ROS2安装！"
+        print_info "请先安装ROS2，然后重新运行配置"
+        print_info "ROS2安装指南: https://docs.ros.org/en/humble/Installation.html"
+        return 1
+    fi
+
+    print_success "发现 ${#distros[@]} 个ROS2发行版"
+
+    # 选择ROS2发行版
+    local selected_distro
+    if [[ ${#distros[@]} -eq 1 ]]; then
+        selected_distro="${distros[0]}"
+    else
+        print_info "发现多个ROS2发行版："
+        for i in "${!distros[@]}"; do
+            local distro_info="${distros[$i]}"
+            local distro_name="${distro_info##*:}"
+            local distro_path="${distro_info%%:*}"
+            echo "  $((i+1)). $distro_name ($distro_path)"
+        done
+
+        # 检查环境变量中的ROS发行版
+        if [[ -n "${ROS_DISTRO:-}" ]]; then
+            for distro_info in "${distros[@]}"; do
+                local distro_name="${distro_info##*:}"
+                if [[ "$distro_name" == "$ROS_DISTRO" ]]; then
+                    print_info "使用当前环境变量中的ROS发行版: $ROS_DISTRO"
+                    selected_distro="$distro_info"
+                    break
+                fi
+            done
+        fi
+
+        if [[ -z "${selected_distro:-}" ]]; then
+            echo -n "请选择要配置的ROS2发行版 [1]: "
+            read -r choice
+            choice="${choice:-1}"
+
+            if [[ "$choice" =~ ^[0-9]+$ ]] && [[ "$choice" -ge 1 ]] && [[ "$choice" -le ${#distros[@]} ]]; then
+                selected_distro="${distros[$((choice-1))]}"
+            else
+                print_warning "无效选择，使用第一个发行版"
+                selected_distro="${distros[0]}"
+            fi
+        fi
+    fi
+
+    local ros_path="${selected_distro%%:*}"
+    local distro_name="${selected_distro##*:}"
+
+    print_info "选择的ROS2发行版: $distro_name"
+    print_info "ROS2路径: $ros_path"
+
+    # 验证ROS2安装
+    if [[ ! -d "$ros_path/include" ]]; then
+        print_error "ROS2头文件目录不存在: $ros_path/include"
+        return 1
+    fi
+
+    # 生成配置文件
+    local config_file="$HOME/myVimrc/.clangd"
+    if [[ "$EDITOR_TYPE" == "neovim" ]]; then
+        config_file="$(dirname "$0")/.clangd"
+    fi
+
+    generate_ros2_clangd_config "$ros_path" "$distro_name" "$config_file"
+
+    # 创建项目级配置脚本
+    local project_script="$(dirname "$0")/setup_ros2_project.sh"
+    cat > "$project_script" << 'EOF'
+#!/bin/bash
+# ROS2项目LSP快速配置脚本
+
+echo "🤖 配置当前项目的ROS2 LSP环境..."
+
+# 查找全局clangd配置文件的多个可能位置
+GLOBAL_CONFIG_PATHS=(
+    "$HOME/myVimrc/.clangd"
+    "$HOME/.config/nvim/.clangd"
+    "$(dirname "${BASH_SOURCE[0]}")/.clangd"
+)
+
+FOUND_CONFIG=""
+for config_path in "${GLOBAL_CONFIG_PATHS[@]}"; do
+    if [[ -f "$config_path" ]]; then
+        FOUND_CONFIG="$config_path"
+        echo "📍 找到全局配置: $config_path"
+        break
+    fi
+done
+
+# 复制全局clangd配置到当前项目
+if [[ -n "$FOUND_CONFIG" ]]; then
+    cp "$FOUND_CONFIG" "./.clangd"
+    echo "✅ 已复制ROS2 clangd配置到当前项目"
+else
+    echo "❌ 未找到全局clangd配置！"
+    echo ""
+    echo "🔍 搜索的位置:"
+    for path in "${GLOBAL_CONFIG_PATHS[@]}"; do
+        echo "   - $path"
+    done
+    echo ""
+    echo "💡 解决方案："
+    echo "   1. 运行: ~/myVimrc/build.sh --ros2"
+    echo "   2. 或者运行: ~/myVimrc/ros2_lsp_setup.sh --global"
+    echo ""
+    exit 1
+fi
+
+# 检查是否在ROS2工作空间中
+if [[ -f "package.xml" || -f "../package.xml" || -f "../../package.xml" ]]; then
+    echo "📦 检测到ROS2包环境"
+
+    # 查找工作空间根目录
+    WS_ROOT="."
+    while [[ "$WS_ROOT" != "/" ]]; do
+        if [[ -d "$WS_ROOT/src" && (-d "$WS_ROOT/build" || -d "$WS_ROOT/install") ]]; then
+            echo "🏠 找到工作空间根目录: $(realpath "$WS_ROOT")"
+            break
+        fi
+        WS_ROOT="$(dirname "$WS_ROOT")"
+    done
+
+    # 添加工作空间特定的包含路径
+    if [[ -d "$WS_ROOT/install" ]]; then
+        echo "    # 工作空间特定路径" >> .clangd
+        if [[ -d "$WS_ROOT/install/include" ]]; then
+            echo "    - -I$WS_ROOT/install/include" >> .clangd
+        fi
+
+        # 添加src中的包
+        for pkg_dir in "$WS_ROOT/src"/*; do
+            if [[ -d "$pkg_dir/include" ]]; then
+                echo "    - -I$pkg_dir/include" >> .clangd
+            fi
+        done
+
+        echo "🔧 工作空间配置完成！"
+    fi
+fi
+
+echo ""
+echo "🎉 ROS2项目LSP配置完成！"
+echo "📝 下一步操作："
+echo "   1. 在Neovim中打开.cpp文件"
+echo "   2. 使用 :LspRestart 重启语言服务器"
+echo "   3. 测试 #include <rclcpp/rclcpp.hpp>"
+echo ""
+EOF
+
+    chmod +x "$project_script"
+
+    print_success "================================"
+    print_success "ROS2 LSP配置完成！"
+    print_success "================================"
+    echo
+    print_info "配置文件位置:"
+    print_info "  全局配置: $config_file"
+    print_info "  项目脚本: $project_script"
+    echo
+    print_info "下一步操作:"
+    print_info "  1. 在ROS2项目中运行: ./setup_ros2_project.sh"
+    print_info "  2. 在Neovim中使用 :LspRestart 重启LSP"
+    print_info "  3. 测试代码补全功能"
+    echo
+}
+
 # 显示使用帮助
 show_help() {
     echo
@@ -1155,11 +1465,13 @@ show_help() {
     echo "  ./build.sh                 交互式安装 (默认)"
     echo "  ./build.sh --auto          自动安装 (极致现代型 Neovim，跳过个人信息)"
     echo "  ./build.sh --upgrade-neovim  升级 Neovim 到最新版"
+    echo "  ./build.sh --ros2          配置ROS2 LSP环境 (自动检测ROS2安装)"
     echo "  ./build.sh --help          显示此帮助信息"
     echo
     print_info "推荐用法:"
     echo "  🚀 快速安装: ./build.sh --auto"
     echo "  ⚙️  自定义安装: ./build.sh"
+    echo "  🤖 ROS2开发: ./build.sh --ros2"
     echo
 }
 
@@ -1178,6 +1490,10 @@ main() {
             ;;
         --upgrade-neovim)
             upgrade_neovim
+            exit 0
+            ;;
+        --ros2)
+            setup_ros2_lsp
             exit 0
             ;;
         --auto)
