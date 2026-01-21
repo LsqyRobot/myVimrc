@@ -10,7 +10,7 @@ set fileencoding=utf-8
 set number
 set relativenumber
 set cursorline
-set signcolumn=yes
+set signcolumn=no
 set updatetime=300
 set timeoutlen=500
 set mouse=a
@@ -215,13 +215,11 @@ for _, sign in ipairs(signs) do
     vim.fn.sign_define(sign.name, { texthl = sign.name, text = sign.text, numhl = "" })
 end
 
--- 配置诊断显示
+-- 配置诊断显示 (关闭所有警告和诊断，专注代码浏览)
 vim.diagnostic.config({
-    virtual_text = {
-        prefix = '●', -- 可以是其他符号，但 ● 兼容性最好
-    },
-    signs = true,
-    underline = true,
+    virtual_text = false,        -- 关闭行内虚拟文本警告
+    signs = false,              -- 关闭左侧符号列的错误标记
+    underline = false,          -- 关闭错误下划线
     update_in_insert = false,
     severity_sort = false,
 })
@@ -672,7 +670,7 @@ pcall(function()
         },
         sections = {
             lualine_a = {'mode'},
-            lualine_b = {'branch', 'diff', 'diagnostics'},
+            lualine_b = {'branch', 'diff'},  -- 移除 'diagnostics' 避免显示错误计数
             lualine_c = {'filename'},
             lualine_x = {'encoding', 'fileformat', 'filetype'},
             lualine_y = {'progress'},
@@ -686,7 +684,7 @@ pcall(function()
     require("bufferline").setup{
         options = {
             numbers = "none",
-            diagnostics = "nvim_lsp",
+            diagnostics = false,           -- 关闭标签页中的诊断显示
             separator_style = "slant",
             show_buffer_close_icons = false,
             show_close_icon = false,
@@ -735,27 +733,11 @@ pcall(function()
     }
 end)
 
--- 诊断面板
-local trouble_ok = pcall(function()
-    require("trouble").setup {
-        icons = false,
-        fold_open = "v",
-        fold_closed = ">",
-        indent_lines = false,
-        signs = {
-            error = "error",
-            warning = "warn",
-            information = "info",
-            hint = "hint"
-        },
-        use_diagnostic_signs = false
-    }
-end)
-
-if trouble_ok then
-    vim.keymap.set("n", "<leader>xx", function() require("trouble").toggle() end)
-    vim.keymap.set("n", "<leader>xw", function() require("trouble").toggle("workspace_diagnostics") end)
-end
+-- 诊断面板 (已禁用，减少代码浏览时的干扰)
+-- local trouble_ok = pcall(function()
+--     require("trouble").setup { ... }
+-- end)
+-- 快捷键已禁用: <leader>xx 和 <leader>xw
 
 -- Flash (快速跳转)
 local flash_ok = pcall(function() require("flash").setup() end)
