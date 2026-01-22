@@ -10,7 +10,7 @@ set fileencoding=utf-8
 set number
 set relativenumber
 set cursorline
-set signcolumn=no
+set signcolumn=auto
 set updatetime=300
 set timeoutlen=500
 set mouse=a
@@ -75,7 +75,7 @@ Plug 'nvim-telescope/telescope-fzf-native.nvim', {'do': 'make'}
 
 " === 文件管理 ===
 Plug 'nvim-tree/nvim-tree.lua'                 " 文件树
-Plug 'nvim-tree/nvim-web-devicons'             " 文件图标
+" Plug 'nvim-tree/nvim-web-devicons'             " 文件图标 (已禁用避免乱码)
 
 " === Git 集成 ===
 Plug 'lewis6991/gitsigns.nvim'                 " Git 状态
@@ -218,7 +218,9 @@ end
 -- 配置诊断显示 (关闭所有警告和诊断，专注代码浏览)
 vim.diagnostic.config({
     virtual_text = false,        -- 关闭行内虚拟文本警告
-    signs = false,              -- 关闭左侧符号列的错误标记
+    signs = {                   -- 只关闭 LSP 诊断符号，保留其他插件符号
+        severity_limit = "ERROR", -- 只显示错误级别的诊断
+    },
     underline = false,          -- 关闭错误下划线
     update_in_insert = false,
     severity_sort = false,
@@ -256,7 +258,7 @@ local on_attach = function(client, bufnr)
     end, bufopts)
 
     -- 诊断
-    vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, bufopts)
+    vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, bufopts)
     vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, bufopts)
     vim.keymap.set('n', ']d', vim.diagnostic.goto_next, bufopts)
 end
@@ -510,10 +512,10 @@ if nvim_tree_ok then
         renderer = {
             icons = {
                 show = {
-                    file = true,
-                    folder = true,
-                    folder_arrow = true,
-                    git = true,
+                    file = false,        -- 完全禁用文件图标
+                    folder = true,       -- 保留文件夹图标
+                    folder_arrow = true, -- 保留展开箭头
+                    git = false,         -- 禁用Git图标避免乱码
                 },
             },
         },
@@ -538,7 +540,7 @@ if nvim_tree_ok then
     elseif use_simple_icons then
         -- 简单 ASCII 图标配置 (兼容所有终端)
         config.renderer.icons.glyphs = {
-            default = "",
+            default = "[F]",
             symlink = "->",
             folder = {
                 arrow_closed = "+",
@@ -780,6 +782,7 @@ imap <silent><script><expr> <C-J> copilot#Accept("\<CR>")
 " ===== 快速开发快捷键总结 =====
 " Space + w    = 保存文件
 " Space + e    = 文件树 (主要)
+" Space + d    = 显示诊断信息
 " Space + ff   = 搜索文件
 " Space + fg   = 全局搜索
 " Space + fb   = 搜索缓冲区
